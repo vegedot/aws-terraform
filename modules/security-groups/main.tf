@@ -1,7 +1,7 @@
 # ALB Security Group
 module "alb_sg" {
   source  = "terraform-aws-modules/security-group/aws"
-  version = "5.1.0"
+  version = "5.3.1"
 
   name        = "${var.project_name}-${var.environment}-sg-alb"
   description = "Security group for ALB"
@@ -39,7 +39,7 @@ module "alb_sg" {
 # ECS Security Group
 module "ecs_sg" {
   source  = "terraform-aws-modules/security-group/aws"
-  version = "5.1.0"
+  version = "5.3.1"
 
   name        = "${var.project_name}-${var.environment}-sg-ecs"
   description = "Security group for ECS tasks"
@@ -85,7 +85,7 @@ module "ecs_sg" {
 # Aurora Security Group
 module "aurora_sg" {
   source  = "terraform-aws-modules/security-group/aws"
-  version = "5.1.0"
+  version = "5.3.1"
 
   name        = "${var.project_name}-${var.environment}-sg-aurora"
   description = "Security group for Aurora MySQL"
@@ -125,7 +125,7 @@ module "aurora_sg" {
 # SSM接続のみ、SSH接続は無効化
 module "bastion_sg" {
   source  = "terraform-aws-modules/security-group/aws"
-  version = "5.1.0"
+  version = "5.3.1"
 
   name        = "${var.project_name}-${var.environment}-sg-bastion"
   description = "Security group for Bastion host (SSM only)"
@@ -149,7 +149,7 @@ module "bastion_sg" {
 # EKS Cluster Security Group (Control Plane)
 module "eks_cluster_sg" {
   source  = "terraform-aws-modules/security-group/aws"
-  version = "5.1.0"
+  version = "5.3.1"
 
   name        = "${var.project_name}-${var.environment}-sg-eks-cluster"
   description = "Security group for EKS cluster control plane"
@@ -170,7 +170,7 @@ module "eks_cluster_sg" {
 # EKS Node Security Group (Worker Nodes)
 module "eks_node_sg" {
   source  = "terraform-aws-modules/security-group/aws"
-  version = "5.1.0"
+  version = "5.3.1"
 
   name        = "${var.project_name}-${var.environment}-sg-eks-node"
   description = "Security group for EKS worker nodes"

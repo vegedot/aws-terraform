@@ -29,7 +29,7 @@ dependency "security_groups" {
 }
 
 terraform {
-  source = "tfr:///terraform-aws-modules/eks/aws?version=20.0.0"
+  source = "tfr:///terraform-aws-modules/eks/aws?version=21.10.1"
 }
 
 inputs = {

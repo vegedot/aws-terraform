@@ -9,7 +9,7 @@ locals {
 }
 
 terraform {
-  source = "tfr:///terraform-aws-modules/ecs/aws//modules/cluster?version=5.7.0"
+  source = "tfr:///terraform-aws-modules/ecs/aws//modules/cluster?version=6.7.0"
 }
 
 inputs = {

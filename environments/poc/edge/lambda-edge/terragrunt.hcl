@@ -9,7 +9,7 @@ locals {
 }
 
 terraform {
-  source = "tfr:///terraform-aws-modules/lambda/aws?version=7.0.0"
+  source = "tfr:///terraform-aws-modules/lambda/aws?version=8.1.2"
 }
 
 inputs = {

@@ -29,7 +29,7 @@ dependency "security_groups" {
 }
 
 terraform {
-  source = "tfr:///terraform-aws-modules/rds-aurora/aws?version=9.0.0"
+  source = "tfr:///terraform-aws-modules/rds-aurora/aws?version=10.0.2"
 }
 
 inputs = {

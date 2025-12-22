@@ -110,7 +110,7 @@ resource "aws_security_group_rule" "bastion_to_ecs" {
 ```hcl
 # environments/poc/network/vpc/terragrunt.hcl
 terraform {
-  source = "tfr:///terraform-aws-modules/vpc/aws?version=5.1.2"
+  source = "tfr:///terraform-aws-modules/vpc/aws?version=6.5.1"
 }
 ```
 
@@ -205,15 +205,17 @@ terraform {
 - **Terraform**: 1.14.3
 - **Terragrunt**: 0.63.6
 - **terraform-aws-modules**: 各モジュールの最新安定版を使用
-  - vpc/aws: ~> 5.0
-  - security-group/aws: ~> 5.0
-  - alb/aws: ~> 9.0
-  - ecs/aws: ~> 5.0
-  - rds-aurora/aws: ~> 9.0
-  - dynamodb-table/aws: ~> 4.0
-  - s3-bucket/aws: ~> 4.2
-  - cloudfront/aws: ~> 3.0
-  - ec2-instance/aws: ~> 5.7
+  - vpc/aws: ~> 6.5
+  - security-group/aws: ~> 5.3
+  - alb/aws: ~> 10.4
+  - ecs/aws: ~> 6.7
+  - rds-aurora/aws: ~> 10.0
+  - dynamodb-table/aws: ~> 5.4
+  - s3-bucket/aws: ~> 5.9
+  - cloudfront/aws: ~> 6.0
+  - ec2-instance/aws: ~> 6.1
+  - eks/aws: ~> 21.10
+  - lambda/aws: ~> 8.1
 
 ## デプロイ手順
 

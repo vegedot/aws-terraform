@@ -31,7 +31,7 @@ dependency "eks_cluster" {
 }
 
 terraform {
-  source = "tfr:///terraform-aws-modules/eks/aws//modules/eks-managed-node-group?version=20.0.0"
+  source = "tfr:///terraform-aws-modules/eks/aws//modules/eks-managed-node-group?version=21.10.1"
 }
 
 inputs = {

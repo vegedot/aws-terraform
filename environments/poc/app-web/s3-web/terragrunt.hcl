@@ -10,7 +10,7 @@ locals {
 }
 
 terraform {
-  source = "tfr:///terraform-aws-modules/s3-bucket/aws?version=4.2.1"
+  source = "tfr:///terraform-aws-modules/s3-bucket/aws?version=5.9.1"
 }
 
 inputs = {

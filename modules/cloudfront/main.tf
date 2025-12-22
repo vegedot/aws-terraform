@@ -10,7 +10,7 @@ resource "aws_cloudfront_origin_access_control" "s3_oac" {
 # CloudFront Distribution
 module "cloudfront" {
   source  = "terraform-aws-modules/cloudfront/aws"
-  version = "3.2.1"
+  version = "6.0.2"
 
   comment             = "${var.project_name}-${var.environment} CloudFront Distribution"
   enabled             = true
