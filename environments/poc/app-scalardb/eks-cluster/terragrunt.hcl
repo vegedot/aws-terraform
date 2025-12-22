@@ -29,13 +29,22 @@ dependency "security_groups" {
   mock_outputs_allowed_terraform_commands = ["init", "validate", "plan"]
 }
 
+dependency "bastion" {
+  config_path = "../../bastion/ec2"
+
+  mock_outputs = {
+    iam_role_arn = "arn:aws:iam::${local.aws_account_id}:role/${local.project_name}-${local.environment}-role-bastion"
+  }
+  mock_outputs_allowed_terraform_commands = ["init", "validate", "plan"]
+}
+
 terraform {
   source = "tfr:///terraform-aws-modules/eks/aws?version=21.10.1"
 }
 
 inputs = {
   cluster_name    = "${local.project_name}-${local.environment}-eks-scalardb"
-  cluster_version = "1.28"
+  cluster_version = "1.34"
 
   # IAM Role for EKS Cluster
   create_iam_role               = true
@@ -61,14 +70,14 @@ inputs = {
   # Node Security Group
   node_security_group_id = dependency.security_groups.outputs.eks_node_sg_id
 
+  # EKS Auto Mode
+  compute_config = {
+    enabled = true
+    node_pools = ["general-purpose"]
+  }
+
   # Cluster Addons
   cluster_addons = {
-    coredns = {
-      most_recent = true
-    }
-    kube-proxy = {
-      most_recent = true
-    }
     vpc-cni = {
       most_recent = true
     }
@@ -77,19 +86,20 @@ inputs = {
     }
   }
 
-  # EKS Managed Node Groups は別ファイルで定義
-  eks_managed_node_groups = {}
+  # PoC環境
+  endopoint_private_access = true
+
+  # PoC環境
+  enable_cluster_creater_admin_permissions = true 
 
   # Enable IRSA (IAM Roles for Service Accounts)
   enable_irsa = true
 
   # Access Entries - Bastion host kubectl access
-  # NOTE: Bastion IAM Roleが先に作成されている必要があります
-  # 初回デプロイ時: Bastion → EKS の順でデプロイ
-  # または、EKSを先にデプロイする場合は以下をコメントアウトしてから後で追加
+  # NOTE: Dependencyにより、Bastionが先に作成される必要があります
   access_entries = {
     bastion = {
-      principal_arn = "arn:aws:iam::${local.aws_account_id}:role/${local.project_name}-${local.environment}-role-bastion"
+      principal_arn = dependency.bastion.outputs.iam_role_arn
 
       policy_associations = {
         admin = {
