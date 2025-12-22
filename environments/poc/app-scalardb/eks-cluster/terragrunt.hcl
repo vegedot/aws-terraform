@@ -72,8 +72,17 @@ inputs = {
 
   # EKS Auto Mode
   compute_config = {
-    enabled = true
+    enabled    = true
     node_pools = ["general-purpose"]
+  }
+
+  # Auto Mode IAM Role
+  create_compute_node_iam_role      = true
+  compute_node_iam_role_name        = "${local.project_name}-${local.environment}-eks-auto-role"
+  compute_node_iam_role_use_name_prefix = false
+  compute_node_iam_role_description = "IAM role for EKS Auto Mode compute nodes"
+  compute_node_iam_role_tags = {
+    Name = "${local.project_name}-${local.environment}-eks-auto-role"
   }
 
   # Cluster Addons
