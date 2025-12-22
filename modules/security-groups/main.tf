@@ -256,3 +256,14 @@ resource "aws_security_group_rule" "eks_cluster_to_node" {
   security_group_id        = module.eks_cluster_sg.security_group_id
   description              = "Allow nodes to communicate with control plane"
 }
+
+# Allow Bastion to access EKS control plane API
+resource "aws_security_group_rule" "bastion_to_eks_cluster" {
+  type                     = "ingress"
+  from_port                = 443
+  to_port                  = 443
+  protocol                 = "tcp"
+  source_security_group_id = module.bastion_sg.security_group_id
+  security_group_id        = module.eks_cluster_sg.security_group_id
+  description              = "Allow Bastion to access EKS control plane (kubectl)"
+}
