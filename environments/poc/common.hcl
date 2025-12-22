@@ -15,13 +15,13 @@ locals {
   # VPC CIDR
   vpc_cidr = "10.0.0.0/16"
 
-  # Availability Zone (single AZ for PoC)
-  azs = ["ap-northeast-1a"]
+  # Availability Zones (ALB requires at least 2 AZs)
+  azs = ["ap-northeast-1a", "ap-northeast-1c"]
 
   # Subnet CIDRs
-  public_subnets   = ["10.0.1.0/24"]
-  private_subnets  = ["10.0.10.0/24"]
-  database_subnets = ["10.0.20.0/24", "10.0.21.0/24"] # Aurora requires at least 2 AZs
+  public_subnets   = ["10.0.1.0/24", "10.0.2.0/24"]     # ALB requires at least 2 public subnets
+  private_subnets  = ["10.0.10.0/24", "10.0.11.0/24"]   # 2 AZs for redundancy
+  database_subnets = ["10.0.20.0/24", "10.0.21.0/24"]   # Aurora requires at least 2 AZs
 
   # AMI IDs (定期的に更新すること)
   # Amazon Linux 2023 最新AMI: https://ap-northeast-1.console.aws.amazon.com/ec2/home?region=ap-northeast-1#AMIs:visibility=public-images;name=al2023-ami;sort=name

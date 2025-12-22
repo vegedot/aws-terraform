@@ -21,14 +21,20 @@ inputs = {
   name = "${local.project_name}-${local.environment}-vpc"
   cidr = local.vpc_cidr
 
-  azs              = concat(local.azs, ["ap-northeast-1c"]) # Aurora requires at least 2 AZs
+  azs              = local.azs
   public_subnets   = local.public_subnets
   private_subnets  = local.private_subnets
   database_subnets = local.database_subnets
 
   # Subnet names following naming convention
-  public_subnet_names   = ["${local.project_name}-${local.environment}-subnet-public-web-1a"]
-  private_subnet_names  = ["${local.project_name}-${local.environment}-subnet-private-app-1a"]
+  public_subnet_names = [
+    "${local.project_name}-${local.environment}-subnet-public-web-1a",
+    "${local.project_name}-${local.environment}-subnet-public-web-1c"
+  ]
+  private_subnet_names = [
+    "${local.project_name}-${local.environment}-subnet-private-app-1a",
+    "${local.project_name}-${local.environment}-subnet-private-app-1c"
+  ]
   database_subnet_names = [
     "${local.project_name}-${local.environment}-subnet-private-db-1a",
     "${local.project_name}-${local.environment}-subnet-private-db-1c"
