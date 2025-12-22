@@ -15,11 +15,4 @@ locals {
   public_subnets   = ["10.1.1.0/24", "10.1.2.0/24"]
   private_subnets  = ["10.1.10.0/24", "10.1.11.0/24"]
   database_subnets = ["10.1.20.0/24", "10.1.21.0/24"]
-
-  # Tags
-  common_tags = {
-    Environment = "dev"
-    Project     = "myapp"
-    ManagedBy   = "Terraform"
-  }
 }

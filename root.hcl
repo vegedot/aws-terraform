@@ -9,6 +9,16 @@ locals {
 
   # Terraform State用S3バケット
   tfstate_bucket = local.common_vars.locals.tfstate_bucket
+
+  # 環境名（common.hclから取得）
+  environment = local.common_vars.locals.environment
+
+  # 共通タグ（root.hclで定義、環境ごとの編集不可）
+  common_tags = {
+    Environment = local.environment  # common.hclから取得
+    Project     = "myapp"            # 全環境共通（固定値）
+    ManagedBy   = "Terraform"        # 全環境共通（固定値）
+  }
 }
 
 # Generate Terraform version requirement
@@ -30,6 +40,11 @@ generate "provider" {
 provider "aws" {
   region  = "${local.aws_region}"
   profile = "${local.aws_profile}"
+
+  # すべてのリソースに自動的に適用されるタグ
+  default_tags {
+    tags = ${jsonencode(local.common_tags)}
+  }
 }
 EOF
 }

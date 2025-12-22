@@ -36,11 +36,4 @@ locals {
   # PoC/開発: Managed-CachingDisabled (キャッシュなし)
   # 本番: Managed-CachingOptimized (キャッシュあり)
   web_cache_policy_name = "Managed-CachingDisabled"
-
-  # Tags
-  common_tags = {
-    Environment = "poc"
-    Project     = "myapp"
-    ManagedBy   = "Terraform"
-  }
 }
