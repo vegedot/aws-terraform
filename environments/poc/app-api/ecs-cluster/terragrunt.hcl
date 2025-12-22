@@ -9,11 +9,11 @@ locals {
 }
 
 terraform {
-  source = "tfr:///terraform-aws-modules/ecs/aws//modules/cluster?version=6.7.0"
+  source = "tfr:///terraform-aws-modules/ecs/aws//modules/cluster?version=6.10.0"
 }
 
 inputs = {
-  cluster_name = "${local.project_name}-${local.environment}-cluster-api"
+  name = "${local.project_name}-${local.environment}-cluster-api"
 
   # Fargate capacity providers
   fargate_capacity_providers = {
