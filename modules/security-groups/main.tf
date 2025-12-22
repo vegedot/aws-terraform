@@ -3,9 +3,10 @@ module "alb_sg" {
   source  = "terraform-aws-modules/security-group/aws"
   version = "5.3.1"
 
-  name        = "${var.project_name}-${var.environment}-sg-alb"
-  description = "Security group for ALB"
-  vpc_id      = var.vpc_id
+  name             = "${var.project_name}-${var.environment}-sg-alb"
+  use_name_prefix  = false
+  description      = "Security group for ALB"
+  vpc_id           = var.vpc_id
 
   ingress_with_cidr_blocks = [
     {
@@ -41,9 +42,10 @@ module "ecs_sg" {
   source  = "terraform-aws-modules/security-group/aws"
   version = "5.3.1"
 
-  name        = "${var.project_name}-${var.environment}-sg-ecs"
-  description = "Security group for ECS tasks"
-  vpc_id      = var.vpc_id
+  name             = "${var.project_name}-${var.environment}-sg-ecs"
+  use_name_prefix  = false
+  description      = "Security group for ECS tasks"
+  vpc_id           = var.vpc_id
 
   computed_ingress_with_source_security_group_id = [
     {
@@ -87,9 +89,10 @@ module "aurora_sg" {
   source  = "terraform-aws-modules/security-group/aws"
   version = "5.3.1"
 
-  name        = "${var.project_name}-${var.environment}-sg-aurora"
-  description = "Security group for Aurora MySQL"
-  vpc_id      = var.vpc_id
+  name             = "${var.project_name}-${var.environment}-sg-aurora"
+  use_name_prefix  = false
+  description      = "Security group for Aurora MySQL"
+  vpc_id           = var.vpc_id
 
   computed_ingress_with_source_security_group_id = [
     {
@@ -127,9 +130,10 @@ module "bastion_sg" {
   source  = "terraform-aws-modules/security-group/aws"
   version = "5.3.1"
 
-  name        = "${var.project_name}-${var.environment}-sg-bastion"
-  description = "Security group for Bastion host (SSM only)"
-  vpc_id      = var.vpc_id
+  name             = "${var.project_name}-${var.environment}-sg-bastion"
+  use_name_prefix  = false
+  description      = "Security group for Bastion host (SSM only)"
+  vpc_id           = var.vpc_id
 
   # SSM接続のみのため、インバウンドルール不要
 
@@ -151,9 +155,10 @@ module "eks_cluster_sg" {
   source  = "terraform-aws-modules/security-group/aws"
   version = "5.3.1"
 
-  name        = "${var.project_name}-${var.environment}-sg-eks-cluster"
-  description = "Security group for EKS cluster control plane"
-  vpc_id      = var.vpc_id
+  name             = "${var.project_name}-${var.environment}-sg-eks-cluster"
+  use_name_prefix  = false
+  description      = "Security group for EKS cluster control plane"
+  vpc_id           = var.vpc_id
 
   egress_with_cidr_blocks = [
     {
@@ -172,9 +177,10 @@ module "eks_node_sg" {
   source  = "terraform-aws-modules/security-group/aws"
   version = "5.3.1"
 
-  name        = "${var.project_name}-${var.environment}-sg-eks-node"
-  description = "Security group for EKS worker nodes"
-  vpc_id      = var.vpc_id
+  name             = "${var.project_name}-${var.environment}-sg-eks-node"
+  use_name_prefix  = false
+  description      = "Security group for EKS worker nodes"
+  vpc_id           = var.vpc_id
 
   computed_ingress_with_source_security_group_id = [
     {
