@@ -1,0 +1,13 @@
+{
+  "name": "viewer-request",
+  "version": "1.0.0",
+  "description": "Lambda@Edge function for CloudFront viewer request",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["lambda", "edge", "cloudfront"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {}
+}
