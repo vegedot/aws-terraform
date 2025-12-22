@@ -211,7 +211,7 @@ terraform {
   - ecs/aws: ~> 5.0
   - rds-aurora/aws: ~> 9.0
   - dynamodb-table/aws: ~> 4.0
-  - s3-bucket/aws: ~> 4.0
+  - s3-bucket/aws: ~> 4.2
   - cloudfront/aws: ~> 3.0
   - ec2-instance/aws: ~> 5.7
 
@@ -295,6 +295,8 @@ terragrunt run-all apply
 
 ### 4. 個別リソースのデプロイ
 
+依存関係を考慮した推奨デプロイ順序：
+
 ```bash
 cd environments/poc
 
@@ -328,42 +330,58 @@ cd database/dynamodb && terragrunt apply && cd ../..
 # 10. App-API - IAM Roles
 cd app-api/iam && terragrunt apply && cd ../..
 
-# 11. Edge - WAF (us-east-1)
+# 11. App-ScalarDB - EKS Cluster
+cd app-scalardb/eks-cluster && terragrunt apply && cd ../..
+
+# 12. App-ScalarDB - Node Group
+cd app-scalardb/node-group && terragrunt apply && cd ../..
+
+# 13. Edge - WAF (us-east-1)
 cd edge/waf && terragrunt apply && cd ../..
 
-# 12. Edge - Lambda@Edge (us-east-1、オプション)
+# 14. Edge - Lambda@Edge (us-east-1、オプション)
 cd edge/lambda-edge && terragrunt apply && cd ../..
 
-# 13. Edge - CloudFront
+# 15. Edge - CloudFront
 cd edge/cloudfront && terragrunt apply && cd ../..
 
-# 14. Bastion - EC2
+# 16. Bastion - EC2
 cd bastion/ec2 && terragrunt apply && cd ../..
 ```
 
-論理グループ単位でデプロイ：
+### 5. 論理グループ単位でのデプロイ
+
+依存関係を考慮した推奨デプロイ順序：
 
 ```bash
 cd environments/poc
 
-# ネットワーク基盤
+# 1. ネットワーク基盤
 cd network && terragrunt run-all apply && cd ..
 
-# APIアプリケーション
+# 2. APIアプリケーション（ALB、ECS Cluster）
 cd app-api && terragrunt run-all apply && cd ..
 
-# WEBアプリケーション
+# 3. WEBアプリケーション（ALB、ECS Cluster、S3）
 cd app-web && terragrunt run-all apply && cd ..
 
-# エッジ・CDN層
-cd edge && terragrunt run-all apply && cd ..
-
-# データベース
+# 4. データベース（Aurora、DynamoDB）
 cd database && terragrunt run-all apply && cd ..
 
-# 踏み台サーバー
+# 5. App-API IAM（DynamoDB依存）
+cd app-api/iam && terragrunt apply && cd ..
+
+# 6. ScalarDBクラスター（EKS、Node Group）
+cd app-scalardb && terragrunt run-all apply && cd ..
+
+# 7. エッジ・CDN層（WAF、Lambda@Edge、CloudFront）
+cd edge && terragrunt run-all apply && cd ..
+
+# 8. 踏み台サーバー
 cd bastion && terragrunt run-all apply && cd ..
 ```
+
+**注意**: `app-api/iam`はDynamoDB ARNに依存するため、`database`グループの後に個別デプロイが必要です。
 
 ## アクセス方法
 

@@ -10,7 +10,7 @@ locals {
 }
 
 terraform {
-  source = "tfr:///terraform-aws-modules/s3-bucket/aws?version=4.0.0"
+  source = "tfr:///terraform-aws-modules/s3-bucket/aws?version=4.2.1"
 }
 
 inputs = {
@@ -48,9 +48,7 @@ inputs = {
     }
   ]
 
-  tags = merge(
-    {
-      Name = "${local.project_name}-${local.environment}-web-content"
-    }
-  )
+  tags = {
+    Name = "${local.project_name}-${local.environment}-web-content"
+  }
 }
