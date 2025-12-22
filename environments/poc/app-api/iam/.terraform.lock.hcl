@@ -21,4 +21,5 @@ provider "registry.terraform.io/hashicorp/aws" {
     "zh:db0b869d09657f6f1e4110b56093c5fcdf9dbdd97c020db1e577b239c0adcbce",
     "zh:ffc72e680370ae7c21f9bd3082c6317730df805c6797427839a6b6b7e9a26a01",
   ]
+  constraints = "6.27.0"
 }
