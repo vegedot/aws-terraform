@@ -3,9 +3,10 @@ include "root" {
 }
 
 locals {
-  common_vars  = read_terragrunt_config(find_in_parent_folders("common.hcl"))
-  environment  = local.common_vars.locals.environment
-  project_name = local.common_vars.locals.project_name
+  common_vars    = read_terragrunt_config(find_in_parent_folders("common.hcl"))
+  environment    = local.common_vars.locals.environment
+  project_name   = local.common_vars.locals.project_name
+  aws_account_id = local.common_vars.locals.aws_account_id
 }
 
 dependency "vpc" {
@@ -72,6 +73,22 @@ inputs = {
 
   # Enable IRSA (IAM Roles for Service Accounts)
   enable_irsa = true
+
+  # Access Entries - Bastion host kubectl access
+  access_entries = {
+    bastion = {
+      principal_arn = "arn:aws:iam::${local.aws_account_id}:role/${local.project_name}-${local.environment}-role-bastion"
+
+      policy_associations = {
+        admin = {
+          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+          access_scope = {
+            type = "cluster"
+          }
+        }
+      }
+    }
+  }
 
   # CloudWatch Logging
   cluster_enabled_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]

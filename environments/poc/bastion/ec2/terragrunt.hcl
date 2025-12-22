@@ -116,22 +116,18 @@ inputs = {
     AmazonECSReadOnlyAccess      = "arn:aws:iam::aws:policy/AmazonECS_FullAccess"
   }
 
-  # Additional IAM policy for EKS access
-  iam_role_additional_policies = {
-    eks_access = jsonencode({
-      Version = "2012-10-17"
-      Statement = [
-        {
-          Effect = "Allow"
-          Action = [
-            "eks:DescribeCluster",
-            "eks:ListClusters",
-            "eks:DescribeNodegroup",
-            "eks:ListNodegroups"
-          ]
-          Resource = "*"
-        }
+  # Inline IAM policy statements for EKS access
+  iam_role_statements = {
+    eks_access = {
+      effect = "Allow"
+      actions = [
+        "eks:DescribeCluster",
+        "eks:ListClusters",
+        "eks:DescribeNodegroup",
+        "eks:ListNodegroups",
+        "eks:AccessKubernetesApi"
       ]
-    })
+      resources = ["*"]
+    }
   }
 }
