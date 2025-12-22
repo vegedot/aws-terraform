@@ -37,6 +37,15 @@ inputs = {
   cluster_name    = "${local.project_name}-${local.environment}-eks-scalardb"
   cluster_version = "1.28"
 
+  # IAM Role for EKS Cluster
+  create_iam_role               = true
+  iam_role_name                 = "${local.project_name}-${local.environment}-eks-cluster-role"
+  iam_role_use_name_prefix      = false
+  iam_role_description          = "IAM role for EKS cluster"
+  iam_role_tags = {
+    Name = "${local.project_name}-${local.environment}-eks-cluster-role"
+  }
+
   # VPC Configuration
   vpc_id     = dependency.vpc.outputs.vpc_id
   subnet_ids = dependency.vpc.outputs.private_subnets
@@ -75,6 +84,9 @@ inputs = {
   enable_irsa = true
 
   # Access Entries - Bastion host kubectl access
+  # NOTE: Bastion IAM Roleが先に作成されている必要があります
+  # 初回デプロイ時: Bastion → EKS の順でデプロイ
+  # または、EKSを先にデプロイする場合は以下をコメントアウトしてから後で追加
   access_entries = {
     bastion = {
       principal_arn = "arn:aws:iam::${local.aws_account_id}:role/${local.project_name}-${local.environment}-role-bastion"
