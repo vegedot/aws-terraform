@@ -6,7 +6,6 @@ locals {
   common_vars  = read_terragrunt_config(find_in_parent_folders("common.hcl"))
   environment  = local.common_vars.locals.environment
   project_name = local.common_vars.locals.project_name
-  common_tags  = local.common_vars.locals.common_tags
   azs          = local.common_vars.locals.azs
 }
 
@@ -95,7 +94,6 @@ inputs = {
   EOT
 
   tags = merge(
-    local.common_tags,
     {
       Name = "${local.project_name}-${local.environment}-scalardb-node"
     }

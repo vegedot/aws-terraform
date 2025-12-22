@@ -15,7 +15,6 @@ resource "aws_iam_role" "ecs_task_execution_role" {
     ]
   })
 
-  tags = var.common_tags
 }
 
 # Attach AWS managed policy for ECS task execution
@@ -41,7 +40,6 @@ resource "aws_iam_role" "ecs_task_role" {
     ]
   })
 
-  tags = var.common_tags
 }
 
 # DynamoDB access policy for ECS Task Role

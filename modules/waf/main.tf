@@ -9,12 +9,9 @@ resource "aws_wafv2_ip_set" "allowed_ips" {
   ip_address_version = "IPV4"
   addresses          = var.allowed_ip_addresses
 
-  tags = merge(
-    var.common_tags,
-    {
-      Name = "${var.project_name}-${var.environment}-waf-ipset"
-    }
-  )
+  tags = {
+    Name = "${var.project_name}-${var.environment}-waf-ipset"
+  }
 }
 
 # WAF Web ACL for CloudFront
@@ -67,10 +64,7 @@ resource "aws_wafv2_web_acl" "cloudfront" {
     sampled_requests_enabled   = true
   }
 
-  tags = merge(
-    var.common_tags,
-    {
-      Name = "${var.project_name}-${var.environment}-waf-cloudfront"
-    }
-  )
+  tags = {
+    Name = "${var.project_name}-${var.environment}-waf-cloudfront"
+  }
 }

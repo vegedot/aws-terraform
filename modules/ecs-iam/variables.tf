@@ -17,9 +17,3 @@ variable "dynamodb_table_arn" {
   description = "ARN of the DynamoDB table"
   type        = string
 }
-
-variable "common_tags" {
-  description = "Common tags to apply to all resources"
-  type        = map(string)
-  default     = {}
-}

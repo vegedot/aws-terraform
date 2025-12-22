@@ -44,10 +44,7 @@ module "alb" {
     }
   }
 
-  tags = merge(
-    var.common_tags,
-    {
-      Name = "${var.project_name}-${var.environment}-alb-${var.alb_type}"
-    }
-  )
+  tags = {
+    Name = "${var.project_name}-${var.environment}-alb-${var.alb_type}"
+  }
 }

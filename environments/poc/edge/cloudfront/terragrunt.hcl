@@ -6,7 +6,6 @@ locals {
   common_vars = read_terragrunt_config(find_in_parent_folders("common.hcl"))
   environment = local.common_vars.locals.environment
   project_name = local.common_vars.locals.project_name
-  common_tags = local.common_vars.locals.common_tags
 }
 
 dependency "s3_web" {
@@ -71,5 +70,4 @@ inputs = {
   lambda_edge_viewer_request_arn     = dependency.lambda_edge.outputs.lambda_function_qualified_arn
   project_name                       = local.project_name
   environment                        = local.environment
-  common_tags                        = local.common_tags
 }

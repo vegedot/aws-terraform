@@ -33,11 +33,6 @@ variable "environment" {
   type        = string
 }
 
-variable "common_tags" {
-  description = "Common tags"
-  type        = map(string)
-}
-
 variable "web_acl_id" {
   description = "WAF Web ACL ID to associate with CloudFront distribution"
   type        = string

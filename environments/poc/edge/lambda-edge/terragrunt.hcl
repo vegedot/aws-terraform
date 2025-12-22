@@ -6,7 +6,6 @@ locals {
   common_vars  = read_terragrunt_config(find_in_parent_folders("common.hcl"))
   environment  = local.common_vars.locals.environment
   project_name = local.common_vars.locals.project_name
-  common_tags  = local.common_vars.locals.common_tags
 }
 
 terraform {
@@ -44,7 +43,6 @@ inputs = {
   cloudwatch_logs_retention_in_days = 7
 
   tags = merge(
-    local.common_tags,
     {
       Name = "${local.project_name}-${local.environment}-lambda-edge-viewer-request"
     }

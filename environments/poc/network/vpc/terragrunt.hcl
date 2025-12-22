@@ -11,7 +11,6 @@ locals {
   public_subnets = local.common_vars.locals.public_subnets
   private_subnets = local.common_vars.locals.private_subnets
   database_subnets = local.common_vars.locals.database_subnets
-  common_tags = local.common_vars.locals.common_tags
 }
 
 terraform {
@@ -64,6 +63,4 @@ inputs = {
   # Database subnet group
   create_database_subnet_group = true
   database_subnet_group_name   = "${local.project_name}-${local.environment}-dbsubnet"
-
-  tags = local.common_tags
 }

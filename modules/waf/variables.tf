@@ -13,9 +13,3 @@ variable "allowed_ip_addresses" {
   type        = list(string)
   default     = []
 }
-
-variable "common_tags" {
-  description = "Common tags to apply to all resources"
-  type        = map(string)
-  default     = {}
-}

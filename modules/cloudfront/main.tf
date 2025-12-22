@@ -94,12 +94,9 @@ module "cloudfront" {
 
   web_acl_id = var.web_acl_id
 
-  tags = merge(
-    var.common_tags,
-    {
-      Name = "${var.project_name}-${var.environment}-cdn"
-    }
-  )
+  tags = {
+    Name = "${var.project_name}-${var.environment}-cdn"
+  }
 }
 
 # Update S3 bucket policy to allow CloudFront OAC

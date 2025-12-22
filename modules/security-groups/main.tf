@@ -34,7 +34,6 @@ module "alb_sg" {
     }
   ]
 
-  tags = var.common_tags
 }
 
 # ECS Security Group
@@ -81,7 +80,6 @@ module "ecs_sg" {
     }
   ]
 
-  tags = var.common_tags
 }
 
 # Aurora Security Group
@@ -121,7 +119,6 @@ module "aurora_sg" {
     }
   ]
 
-  tags = var.common_tags
 }
 
 # Bastion Security Group
@@ -147,7 +144,6 @@ module "bastion_sg" {
     }
   ]
 
-  tags = var.common_tags
 }
 
 # EKS Cluster Security Group (Control Plane)
@@ -169,7 +165,6 @@ module "eks_cluster_sg" {
     }
   ]
 
-  tags = var.common_tags
 }
 
 # EKS Node Security Group (Worker Nodes)
@@ -216,7 +211,6 @@ module "eks_node_sg" {
     }
   ]
 
-  tags = var.common_tags
 }
 
 # Allow Bastion to connect to ECS

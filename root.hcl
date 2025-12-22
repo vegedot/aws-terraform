@@ -10,14 +10,15 @@ locals {
   # Terraform State用S3バケット
   tfstate_bucket = local.common_vars.locals.tfstate_bucket
 
-  # 環境名（common.hclから取得）
-  environment = local.common_vars.locals.environment
+  # 環境名とプロジェクト名（common.hclから取得）
+  environment  = local.common_vars.locals.environment
+  project_name = local.common_vars.locals.project_name
 
-  # 共通タグ（root.hclで定義、環境ごとの編集不可）
-  common_tags = {
+  # デフォルトタグ（root.hclで定義、環境ごとの編集不可）
+  default_tags = {
     Environment = local.environment  # common.hclから取得
-    Project     = "myapp"            # 全環境共通（固定値）
-    ManagedBy   = "Terraform"        # 全環境共通（固定値）
+    Project     = local.project_name # common.hclから取得
+    ManagedBy   = "Terraform"        # 固定値
   }
 }
 
@@ -43,7 +44,7 @@ provider "aws" {
 
   # すべてのリソースに自動的に適用されるタグ
   default_tags {
-    tags = ${jsonencode(local.common_tags)}
+    tags = ${jsonencode(local.default_tags)}
   }
 }
 EOF

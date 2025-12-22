@@ -6,7 +6,6 @@ locals {
   common_vars  = read_terragrunt_config(find_in_parent_folders("common.hcl"))
   environment  = local.common_vars.locals.environment
   project_name = local.common_vars.locals.project_name
-  common_tags  = local.common_vars.locals.common_tags
 }
 
 dependency "vpc" {
@@ -78,7 +77,6 @@ inputs = {
   cluster_enabled_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
 
   tags = merge(
-    local.common_tags,
     {
       Name = "${local.project_name}-${local.environment}-eks-scalardb"
     }

@@ -23,11 +23,6 @@ variable "environment" {
   type        = string
 }
 
-variable "common_tags" {
-  description = "Common tags"
-  type        = map(string)
-}
-
 variable "alb_type" {
   description = "Type of ALB to create (api or web)"
   type        = string
