@@ -25,15 +25,21 @@ inputs = {
   # Lambda@Edge specific settings
   lambda_at_edge = true
 
-  source_path = [
-    {
-      path = "${get_repo_root()}/lambda-edge/viewer-request"
-      commands = [
-        "npm install",
-        ":zip"
-      ]
-    }
-  ]
+  # Pythonが利用できない場合は手動でzipファイルを作成してください
+  # cd lambda-edge/viewer-request && npm install && zip -r ../../lambda-edge.zip .
+  create_package      = false
+  local_existing_package = "${get_repo_root()}/lambda-edge.zip"
+
+  # 注意: 初回デプロイ前に上記のコマンドでzipファイルを作成する必要があります
+  # source_path = [
+  #   {
+  #     path = "${get_repo_root()}/lambda-edge/viewer-request"
+  #     commands = [
+  #       "npm install",
+  #       ":zip"
+  #     ]
+  #   }
+  # ]
 
   # Lambda@Edge IAM role
   create_role = true
