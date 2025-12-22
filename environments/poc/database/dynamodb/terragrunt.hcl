@@ -36,9 +36,7 @@ inputs = {
   # サーバーサイド暗号化
   server_side_encryption_enabled = true
 
-  tags = merge(
-    {
-      Name = "${local.project_name}-${local.environment}-dynamodb-main"
-    }
-  )
+  tags = {
+    Name = "${local.project_name}-${local.environment}-dynamodb-main"
+  }
 }

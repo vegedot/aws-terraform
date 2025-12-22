@@ -30,9 +30,7 @@ inputs = {
     }
   }
 
-  tags = merge(
-    {
-      Name = "${local.project_name}-${local.environment}-cluster-api"
-    }
-  )
+  tags = {
+    Name = "${local.project_name}-${local.environment}-cluster-api"
+  }
 }

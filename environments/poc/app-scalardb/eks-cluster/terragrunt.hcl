@@ -76,9 +76,7 @@ inputs = {
   # CloudWatch Logging
   cluster_enabled_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
 
-  tags = merge(
-    {
-      Name = "${local.project_name}-${local.environment}-eks-scalardb"
-    }
-  )
+  tags = {
+    Name = "${local.project_name}-${local.environment}-eks-scalardb"
+  }
 }

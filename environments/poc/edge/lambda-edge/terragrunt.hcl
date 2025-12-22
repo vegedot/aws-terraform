@@ -42,9 +42,7 @@ inputs = {
   # CloudWatch Logs (Lambda@Edge logs go to edge locations)
   cloudwatch_logs_retention_in_days = 7
 
-  tags = merge(
-    {
-      Name = "${local.project_name}-${local.environment}-lambda-edge-viewer-request"
-    }
-  )
+  tags = {
+    Name = "${local.project_name}-${local.environment}-lambda-edge-viewer-request"
+  }
 }

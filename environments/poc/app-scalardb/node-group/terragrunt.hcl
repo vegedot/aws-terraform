@@ -93,9 +93,7 @@ inputs = {
     echo "Configuring node for ScalarDB workloads"
   EOT
 
-  tags = merge(
-    {
-      Name = "${local.project_name}-${local.environment}-scalardb-node"
-    }
-  )
+  tags = {
+    Name = "${local.project_name}-${local.environment}-scalardb-node"
+  }
 }

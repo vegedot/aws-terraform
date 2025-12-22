@@ -64,9 +64,7 @@ inputs = {
 
   enabled_cloudwatch_logs_exports = ["audit", "error", "general", "slowquery"]
 
-  tags = merge(
-    {
-      Name = "${local.project_name}-${local.environment}-aurora-main"
-    }
-  )
+  tags = {
+    Name = "${local.project_name}-${local.environment}-aurora-main"
+  }
 }
