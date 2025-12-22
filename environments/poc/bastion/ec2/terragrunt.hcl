@@ -48,16 +48,63 @@ inputs = {
   # User data (SSM Agentはプリインストール済み)
   user_data = <<-EOF
               #!/bin/bash
-              yum update -y
+              dnf update -y
+
+              # Install git
+              dnf install -y git
 
               # Install Docker
-              yum install -y docker
+              dnf install -y docker
               systemctl start docker
               systemctl enable docker
               usermod -a -G docker ec2-user
 
               # Install mysql client
-              yum install -y mariadb105
+              dnf install -y mariadb105
+
+              # Install Java (Amazon Corretto 17)
+              dnf install -y java-17-amazon-corretto-devel
+
+              # Install kubectl
+              cat <<'KUBECTL_REPO' > /etc/yum.repos.d/kubernetes.repo
+              [kubernetes]
+              name=Kubernetes
+              baseurl=https://pkgs.k8s.io/core:/stable:/v1.28/rpm/
+              enabled=1
+              gpgcheck=1
+              gpgkey=https://pkgs.k8s.io/core:/stable:/v1.28/rpm/repodata/repomd.xml.key
+              KUBECTL_REPO
+              dnf install -y kubectl
+
+              # Install Helm
+              curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+              # Configure kubectl for ssm-user (SSM Session Manager uses ssm-user)
+              mkdir -p /home/ssm-user/.kube
+              chown ssm-user:ssm-user /home/ssm-user/.kube
+
+              # Configure EKS kubeconfig for app-scalardb cluster
+              # Note: This will run after EKS cluster is created
+              CLUSTER_NAME="${local.project_name}-${local.environment}-eks-scalardb"
+              REGION="${local.common_vars.locals.aws_region}"
+
+              # Create a script for ssm-user to update kubeconfig manually if needed
+              cat > /home/ssm-user/update-kubeconfig.sh <<SCRIPT
+              #!/bin/bash
+              aws eks update-kubeconfig --name $CLUSTER_NAME --region $REGION --kubeconfig /home/ssm-user/.kube/config
+              echo "Kubeconfig updated for cluster: $CLUSTER_NAME"
+              kubectl get nodes
+              SCRIPT
+
+              chmod +x /home/ssm-user/update-kubeconfig.sh
+              chown ssm-user:ssm-user /home/ssm-user/update-kubeconfig.sh
+
+              # Try to configure kubeconfig automatically (may fail if EKS not yet created)
+              su - ssm-user -c "aws eks update-kubeconfig --name $CLUSTER_NAME --region $REGION --kubeconfig /home/ssm-user/.kube/config" 2>/dev/null || echo "EKS cluster not ready yet. Run ~/update-kubeconfig.sh after EKS is created."
+
+              # Set JAVA_HOME for ssm-user
+              echo 'export JAVA_HOME=/usr/lib/jvm/java-17-amazon-corretto' >> /home/ssm-user/.bashrc
+              echo 'export PATH=$JAVA_HOME/bin:$PATH' >> /home/ssm-user/.bashrc
               EOF
 
   # IAM instance profile for SSM and ECS access
@@ -67,5 +114,24 @@ inputs = {
   iam_role_policies = {
     AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
     AmazonECSReadOnlyAccess      = "arn:aws:iam::aws:policy/AmazonECS_FullAccess"
+  }
+
+  # Additional IAM policy for EKS access
+  iam_role_additional_policies = {
+    eks_access = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Effect = "Allow"
+          Action = [
+            "eks:DescribeCluster",
+            "eks:ListClusters",
+            "eks:DescribeNodegroup",
+            "eks:ListNodegroups"
+          ]
+          Resource = "*"
+        }
+      ]
+    })
   }
 }
