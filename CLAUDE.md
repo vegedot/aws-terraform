@@ -84,11 +84,13 @@ environments/{env}/
     security-groups/      # Shared SGs (ALB, Bastion)
   app-api/
     alb/                  # API ALB (uses custom module)
+    ecr/                  # ECR repository for Java API images
     ecs-cluster/          # ECS cluster (uses official module)
     ecs-sg/               # ECS API security group
     iam/                  # IAM roles for ECS (uses custom module)
   app-web/
     alb/                  # WEB ALB (uses custom module)
+    ecr/                  # ECR repository for Node.js WEB images
     ecs-cluster/          # ECS cluster for web
     ecs-sg/               # ECS WEB security group
     s3-web/              # S3 for static content
@@ -116,19 +118,20 @@ Deploy in this order (dependencies are managed via Terragrunt dependency blocks)
 2. network/security-groups (ALB, Bastion)
 3. app-api/ecs-sg, app-web/ecs-sg
 4. app-api/alb, app-web/alb
-5. app-api/ecs-cluster, app-web/ecs-cluster
-6. database/aurora-sg (requires ecs-sg)
-7. database/aurora, database/dynamodb
-8. app-api/iam (requires DynamoDB ARN)
-9. app-web/iam
-10. app-web/s3-web
-11. app-scalardb/eks-sg (requires ecs-sg)
-12. app-scalardb/eks-cluster (requires eks-sg)
-13. bastion/ec2
-14. app-scalardb/eks-access-entries (requires eks-cluster, bastion)
-15. edge/waf (us-east-1)
-16. edge/lambda-edge (us-east-1, optional)
-17. edge/cloudfront (requires app-api/alb, app-web/alb, s3-web, waf, lambda-edge)
+5. app-api/ecr, app-web/ecr
+6. app-api/ecs-cluster, app-web/ecs-cluster
+7. database/aurora-sg (requires ecs-sg)
+8. database/aurora, database/dynamodb
+9. app-api/iam (requires DynamoDB ARN)
+10. app-web/iam
+11. app-web/s3-web
+12. app-scalardb/eks-sg (requires ecs-sg)
+13. app-scalardb/eks-cluster (requires eks-sg)
+14. bastion/ec2
+15. app-scalardb/eks-access-entries (requires eks-cluster, bastion)
+16. edge/waf (us-east-1)
+17. edge/lambda-edge (us-east-1, optional)
+18. edge/cloudfront (requires app-api/alb, app-web/alb, s3-web, waf, lambda-edge)
 
 Or use `terragrunt run-all apply` to automatically resolve dependencies.
 
@@ -200,12 +203,43 @@ Benefits:
 - **Flexibility**: Easy to add app-specific permissions (e.g., S3 for WEB, SQS for API)
 - **Security**: WEB application has no database access at all, reducing attack surface
 
+### Container Image Management (ECR)
+
+**ECR Repositories** are managed per application:
+
+**App-API ECR** (`app-api/ecr/`):
+- Repository: `{project}-{env}-api`
+- Runtime: Java
+- Image scanning: Enabled (vulnerability detection)
+- Lifecycle: Keep last 20 images
+- Encryption: AES256
+
+**App-WEB ECR** (`app-web/ecr/`):
+- Repository: `{project}-{env}-web`
+- Runtime: Node.js
+- Image scanning: Enabled (vulnerability detection)
+- Lifecycle: Keep last 20 images
+- Encryption: AES256
+
+**Pushing Images to ECR**:
+```bash
+# Authenticate Docker to ECR
+aws ecr get-login-password --region ap-northeast-1 | docker login --username AWS --password-stdin {account-id}.dkr.ecr.ap-northeast-1.amazonaws.com
+
+# Build and tag image
+docker build -t {project}-{env}-api:latest .
+docker tag {project}-{env}-api:latest {account-id}.dkr.ecr.ap-northeast-1.amazonaws.com/{project}-{env}-api:latest
+
+# Push to ECR
+docker push {account-id}.dkr.ecr.ap-northeast-1.amazonaws.com/{project}-{env}-api:latest
+```
+
 ### Application Deployment
 
 **Important**: Lambda and ECS applications are NOT deployed via Terraform:
 - Use **ecspresso** for ECS task definitions and services
 - Use **lambroll** for Lambda functions
-- Terraform only manages infrastructure (clusters, IAM roles, security groups, etc.)
+- Terraform only manages infrastructure (clusters, IAM roles, security groups, ECR repositories, etc.)
 
 ### PoC Environment Specifics
 
