@@ -1,6 +1,6 @@
 # ECS Task Execution Role
 resource "aws_iam_role" "ecs_task_execution_role" {
-  name = "${var.project_name}-${var.environment}-ecs-task-execution-role"
+  name = "${var.project_name}-${var.environment}-ecs-task-execution-role-${var.app_name}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -15,6 +15,9 @@ resource "aws_iam_role" "ecs_task_execution_role" {
     ]
   })
 
+  tags = {
+    Name = "${var.project_name}-${var.environment}-ecs-task-execution-role-${var.app_name}"
+  }
 }
 
 # Attach AWS managed policy for ECS task execution
@@ -25,7 +28,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
 
 # ECS Task Role (for application access to AWS services)
 resource "aws_iam_role" "ecs_task_role" {
-  name = "${var.project_name}-${var.environment}-ecs-task-role"
+  name = "${var.project_name}-${var.environment}-ecs-task-role-${var.app_name}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -40,11 +43,16 @@ resource "aws_iam_role" "ecs_task_role" {
     ]
   })
 
+  tags = {
+    Name = "${var.project_name}-${var.environment}-ecs-task-role-${var.app_name}"
+  }
 }
 
-# DynamoDB access policy for ECS Task Role
+# DynamoDB access policy for ECS Task Role (conditional)
 resource "aws_iam_role_policy" "ecs_task_dynamodb_policy" {
-  name = "${var.project_name}-${var.environment}-ecs-dynamodb-policy"
+  count = var.enable_dynamodb_access ? 1 : 0
+
+  name = "${var.project_name}-${var.environment}-ecs-dynamodb-policy-${var.app_name}"
   role = aws_iam_role.ecs_task_role.id
 
   policy = jsonencode({
@@ -73,7 +81,7 @@ resource "aws_iam_role_policy" "ecs_task_dynamodb_policy" {
 
 # CloudWatch Logs policy for ECS Task Role
 resource "aws_iam_role_policy" "ecs_task_cloudwatch_policy" {
-  name = "${var.project_name}-${var.environment}-ecs-cloudwatch-policy"
+  name = "${var.project_name}-${var.environment}-ecs-cloudwatch-policy-${var.app_name}"
   role = aws_iam_role.ecs_task_role.id
 
   policy = jsonencode({
@@ -92,9 +100,11 @@ resource "aws_iam_role_policy" "ecs_task_cloudwatch_policy" {
   })
 }
 
-# Secrets Manager access policy for Aurora credentials
+# Secrets Manager access policy for Aurora credentials (conditional)
 resource "aws_iam_role_policy" "ecs_task_secrets_policy" {
-  name = "${var.project_name}-${var.environment}-ecs-secrets-policy"
+  count = var.enable_aurora_access ? 1 : 0
+
+  name = "${var.project_name}-${var.environment}-ecs-secrets-policy-${var.app_name}"
   role = aws_iam_role.ecs_task_role.id
 
   policy = jsonencode({

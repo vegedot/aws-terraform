@@ -120,14 +120,15 @@ Deploy in this order (dependencies are managed via Terragrunt dependency blocks)
 6. database/aurora-sg (requires ecs-sg)
 7. database/aurora, database/dynamodb
 8. app-api/iam (requires DynamoDB ARN)
-9. app-web/s3-web
-10. app-scalardb/eks-sg (requires ecs-sg)
-11. app-scalardb/eks-cluster (requires eks-sg)
-12. bastion/ec2
-13. app-scalardb/eks-access-entries (requires eks-cluster, bastion)
-14. edge/waf (us-east-1)
-15. edge/lambda-edge (us-east-1, optional)
-16. edge/cloudfront (requires app-api/alb, app-web/alb, s3-web, waf, lambda-edge)
+9. app-web/iam
+10. app-web/s3-web
+11. app-scalardb/eks-sg (requires ecs-sg)
+12. app-scalardb/eks-cluster (requires eks-sg)
+13. bastion/ec2
+14. app-scalardb/eks-access-entries (requires eks-cluster, bastion)
+15. edge/waf (us-east-1)
+16. edge/lambda-edge (us-east-1, optional)
+17. edge/cloudfront (requires app-api/alb, app-web/alb, s3-web, waf, lambda-edge)
 
 Or use `terragrunt run-all apply` to automatically resolve dependencies.
 
@@ -177,11 +178,27 @@ Benefits:
 
 ### IAM Roles for ECS
 
-The ecs-iam custom module creates:
-1. **Task Execution Role**: For ECS to pull images, write logs (uses AWS managed policy)
-2. **Task Role**: For application access to:
-   - DynamoDB (GetItem, PutItem, Query, Scan, etc.)
+IAM roles are managed per application for security and flexibility:
+
+**App-API IAM Roles** (`app-api/iam/`, uses `modules/ecs-iam`):
+1. **Task Execution Role**: ECR image pull, CloudWatch Logs write (AWS managed policy)
+2. **Task Role**: Application-specific permissions:
+   - DynamoDB (GetItem, PutItem, Query, Scan, etc.) - ✅ **enabled**
+   - Aurora via Secrets Manager (GetSecretValue) - ✅ **enabled**
    - CloudWatch Logs (/aws/ecs/{project}-{env}-*)
+
+**App-WEB IAM Roles** (`app-web/iam/`, uses `modules/ecs-iam`):
+1. **Task Execution Role**: ECR image pull, CloudWatch Logs write (AWS managed policy)
+2. **Task Role**: Application-specific permissions:
+   - DynamoDB - ❌ **disabled** (WEB doesn't need database access)
+   - Aurora via Secrets Manager - ❌ **disabled** (WEB doesn't need database access)
+   - CloudWatch Logs (/aws/ecs/{project}-{env}-*)
+
+Benefits:
+- **Principle of Least Privilege**: Each app only has permissions it needs (API has DB access, WEB does not)
+- **Independent management**: API and WEB permissions managed separately
+- **Flexibility**: Easy to add app-specific permissions (e.g., S3 for WEB, SQS for API)
+- **Security**: WEB application has no database access at all, reducing attack surface
 
 ### Application Deployment
 
