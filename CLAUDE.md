@@ -54,21 +54,23 @@ Each terragrunt.hcl includes root.hcl and reads common.hcl to access shared conf
 ### Module Strategy
 
 **Use custom wrapper modules (modules/)** when:
-- Managing multiple related resources together (e.g., security-groups creates 4 SGs with cross-references)
-- Resources have interdependencies (e.g., SG rules referencing other SG IDs)
-- Combining multiple official modules (e.g., cloudfront = CloudFront + S3 OAC + Bucket Policy)
+- Managing multiple related resources together with complex interdependencies (e.g., eks-sg creates cluster and node SGs with cross-references)
+- Resources have interdependencies that require coordinated creation (e.g., SG rules referencing other SG IDs within same module)
+- Combining multiple official modules (e.g., cloudfront = CloudFront + S3 OAC + Bucket Policy, alb = ALB + Target Groups)
 - Common logic needs reuse across environments
 
 **Use official modules directly (in terragrunt.hcl)** when:
 - Single resource creation (VPC, EC2, S3, Aurora, DynamoDB)
 - Environment-specific configuration variations
 - 1:1 mapping between terragrunt.hcl and AWS resource
+- Resource-specific security groups (defined alongside the resource they protect)
 
 ### Directory Structure
 
 ```
 modules/                    # Custom wrapper modules
-  security-groups/          # Creates 4 SGs with cross-references
+  security-groups/          # Creates shared SGs (ALB, Bastion)
+  eks-sg/                  # EKS cluster and node SGs with cross-references
   alb/                     # API and WEB ALBs with target groups
   cloudfront/              # CloudFront + S3 OAC + bucket policy
   ecs-iam/                 # ECS task/execution roles + DynamoDB/CloudWatch permissions
@@ -78,20 +80,23 @@ environments/{env}/
   common.hcl              # Environment variables (AWS account, region, CIDR, AMI)
   network/
     vpc/                  # VPC with public/private/database subnets
-    security-groups/      # ALB, ECS, Aurora, Bastion SGs
+    security-groups/      # Shared SGs (ALB, Bastion)
   app-api/
     alb/                  # API ALB (uses custom module)
     ecs-cluster/          # ECS cluster (uses official module)
+    ecs-sg/               # ECS API security group
     iam/                  # IAM roles for ECS (uses custom module)
   app-web/
     alb/                  # WEB ALB (uses custom module)
     ecs-cluster/          # ECS cluster for web
+    ecs-sg/               # ECS WEB security group
     s3-web/              # S3 for static content
   app-scalardb/
     eks-cluster/          # EKS cluster for ScalarDB
-    node-group/           # EKS managed node group
+    eks-sg/               # EKS cluster and node security groups
   database/
     aurora/              # Aurora MySQL (2 AZ minimum for subnet group)
+    aurora-sg/           # Aurora security group
     dynamodb/            # DynamoDB with Point-in-Time Recovery
   edge/
     waf/                 # WAF (must be in us-east-1 for CloudFront)
@@ -106,18 +111,20 @@ environments/{env}/
 Deploy in this order (dependencies are managed via Terragrunt dependency blocks):
 
 1. network/vpc
-2. network/security-groups
-3. app-api/alb, app-web/alb
-4. app-api/ecs-cluster, app-web/ecs-cluster
-5. database/aurora, database/dynamodb
-6. app-api/iam (requires DynamoDB ARN)
-7. app-web/s3-web
-8. app-scalardb/eks-cluster
-9. app-scalardb/node-group (requires eks-cluster)
-10. edge/waf (us-east-1)
-11. edge/lambda-edge (us-east-1, optional)
-12. edge/cloudfront (requires app-api/alb, app-web/alb, s3-web, waf, lambda-edge)
-13. bastion/ec2
+2. network/security-groups (ALB, Bastion)
+3. app-api/ecs-sg, app-web/ecs-sg
+4. app-api/alb, app-web/alb
+5. app-api/ecs-cluster, app-web/ecs-cluster
+6. database/aurora-sg (requires ecs-sg)
+7. database/aurora, database/dynamodb
+8. app-api/iam (requires DynamoDB ARN)
+9. app-web/s3-web
+10. app-scalardb/eks-sg (requires ecs-sg)
+11. app-scalardb/eks-cluster (requires eks-sg)
+12. edge/waf (us-east-1)
+13. edge/lambda-edge (us-east-1, optional)
+14. edge/cloudfront (requires app-api/alb, app-web/alb, s3-web, waf, lambda-edge)
+15. bastion/ec2
 
 Or use `terragrunt run-all apply` to automatically resolve dependencies.
 
@@ -130,13 +137,24 @@ Or use `terragrunt run-all apply` to automatically resolve dependencies.
 
 ### Security Groups Architecture
 
-The security-groups custom module creates 4 security groups with interdependencies:
-- **ALB SG**: Allows HTTP/HTTPS from internet
-- **ECS SG**: Allows traffic from ALB on ports 80, 3000, 8080
-- **Aurora SG**: Allows MySQL (3306) from ECS and Bastion
+Security groups are organized by scope and managed alongside the resources they protect:
+
+**Shared Security Groups** (`modules/security-groups`, `network/security-groups/`):
+- **ALB SG**: Allows HTTP/HTTPS from internet, used by both API and WEB ALBs
 - **Bastion SG**: SSM-only, no inbound, outbound only to VPC CIDR
 
-Cross-references are implemented using aws_security_group_rule resources after module creation (see modules/security-groups/main.tf:154).
+**Resource-Specific Security Groups** (defined in resource directories):
+- **ECS API SG** (`app-api/ecs-sg/`): Allows traffic from ALB on ports 80, 3000, 8080, plus Bastion access
+- **ECS WEB SG** (`app-web/ecs-sg/`): Allows traffic from ALB on ports 80, 3000, 8080, plus Bastion access
+- **Aurora SG** (`database/aurora-sg/`): Allows MySQL (3306) from ECS API, ECS WEB, EKS nodes, and Bastion
+- **EKS SGs** (`app-scalardb/eks-sg/`, uses `modules/eks-sg`):
+  - **EKS Cluster SG**: Control plane security group with node communication
+  - **EKS Node SG**: Worker nodes with access from ECS tasks, control plane, and Bastion
+
+This architecture provides:
+- **Separation of concerns**: Each security group is managed with its related resource
+- **Clear dependencies**: Security groups reference each other using Terragrunt dependencies
+- **Easier maintenance**: Changes to ECS don't affect Aurora or EKS security groups
 
 ### IAM Roles for ECS
 

@@ -19,11 +19,11 @@ dependency "vpc" {
   mock_outputs_allowed_terraform_commands = ["init", "validate", "plan"]
 }
 
-dependency "security_groups" {
-  config_path = "../../network/security-groups"
+dependency "aurora_sg" {
+  config_path = "../aurora-sg"
 
   mock_outputs = {
-    aurora_sg_id = "sg-00000000000000000"
+    security_group_id = "sg-00000000000000000"
   }
   mock_outputs_allowed_terraform_commands = ["init", "validate", "plan"]
 }
@@ -43,13 +43,11 @@ inputs = {
   # WARNING: In production, use AWS Secrets Manager for password
   manage_master_user_password = true
 
-  vpc_id               = dependency.vpc.outputs.vpc_id
-  db_subnet_group_name = dependency.vpc.outputs.database_subnet_group_name
-  security_group_rules = {
-    vpc_ingress = {
-      cidr_blocks = dependency.vpc.outputs.private_subnets_cidr_blocks
-    }
-  }
+  vpc_id                   = dependency.vpc.outputs.vpc_id
+  db_subnet_group_name     = dependency.vpc.outputs.database_subnet_group_name
+  vpc_security_group_ids   = [dependency.aurora_sg.outputs.security_group_id]
+  create_db_subnet_group   = false
+  create_security_group    = false
 
   # PoC環境のため最小構成
   instances = {

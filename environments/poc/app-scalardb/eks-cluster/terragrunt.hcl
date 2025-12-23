@@ -19,8 +19,8 @@ dependency "vpc" {
   mock_outputs_allowed_terraform_commands = ["init", "validate", "plan"]
 }
 
-dependency "security_groups" {
-  config_path = "../../network/security-groups"
+dependency "eks_sg" {
+  config_path = "../eks-sg"
 
   mock_outputs = {
     eks_cluster_sg_id = "sg-00000000000000000"
@@ -64,11 +64,11 @@ inputs = {
   cluster_endpoint_private_access = true
 
   # Security Groups
-  cluster_security_group_id            = dependency.security_groups.outputs.eks_cluster_sg_id
+  cluster_security_group_id            = dependency.eks_sg.outputs.eks_cluster_sg_id
   cluster_additional_security_group_ids = []
 
   # Node Security Group
-  node_security_group_id = dependency.security_groups.outputs.eks_node_sg_id
+  node_security_group_id = dependency.eks_sg.outputs.eks_node_sg_id
 
   # EKS Auto Mode
   compute_config = {
