@@ -71,6 +71,7 @@ Each terragrunt.hcl includes root.hcl and reads common.hcl to access shared conf
 modules/                    # Custom wrapper modules
   security-groups/          # Creates shared SGs (ALB, Bastion)
   eks-sg/                  # EKS cluster and node SGs with cross-references
+  eks-access-entries/      # EKS access entries for IAM principals
   alb/                     # API and WEB ALBs with target groups
   cloudfront/              # CloudFront + S3 OAC + bucket policy
   ecs-iam/                 # ECS task/execution roles + DynamoDB/CloudWatch permissions
@@ -94,6 +95,7 @@ environments/{env}/
   app-scalardb/
     eks-cluster/          # EKS cluster for ScalarDB
     eks-sg/               # EKS cluster and node security groups
+    eks-access-entries/   # EKS access control (Bastion, etc.)
   database/
     aurora/              # Aurora MySQL (2 AZ minimum for subnet group)
     aurora-sg/           # Aurora security group
@@ -121,12 +123,15 @@ Deploy in this order (dependencies are managed via Terragrunt dependency blocks)
 9. app-web/s3-web
 10. app-scalardb/eks-sg (requires ecs-sg)
 11. app-scalardb/eks-cluster (requires eks-sg)
-12. edge/waf (us-east-1)
-13. edge/lambda-edge (us-east-1, optional)
-14. edge/cloudfront (requires app-api/alb, app-web/alb, s3-web, waf, lambda-edge)
-15. bastion/ec2
+12. bastion/ec2
+13. app-scalardb/eks-access-entries (requires eks-cluster, bastion)
+14. edge/waf (us-east-1)
+15. edge/lambda-edge (us-east-1, optional)
+16. edge/cloudfront (requires app-api/alb, app-web/alb, s3-web, waf, lambda-edge)
 
 Or use `terragrunt run-all apply` to automatically resolve dependencies.
+
+**Note**: EKS access control is managed separately from the cluster itself in `eks-access-entries`. This allows flexible addition/removal of users and roles (e.g., bastion hosts, CI/CD roles) without modifying the EKS cluster configuration. The Bastion's user data includes EKS cluster configuration that will gracefully fail if EKS doesn't exist yet - simply run the `/home/ssm-user/update-kubeconfig.sh` script after both EKS cluster and access entries are deployed.
 
 ### State Management
 
@@ -155,6 +160,20 @@ This architecture provides:
 - **Separation of concerns**: Each security group is managed with its related resource
 - **Clear dependencies**: Security groups reference each other using Terragrunt dependencies
 - **Easier maintenance**: Changes to ECS don't affect Aurora or EKS security groups
+
+### EKS Access Control Architecture
+
+EKS access control is managed separately from the cluster configuration for flexibility:
+
+**EKS Access Entries** (`app-scalardb/eks-access-entries/`, uses `modules/eks-access-entries`):
+- Manages IAM principal access to the EKS cluster
+- Currently grants Bastion IAM role admin access via `AmazonEKSClusterAdminPolicy`
+- Can be extended to add CI/CD roles, developer roles, etc. without modifying the cluster
+
+Benefits:
+- **Flexible access management**: Add/remove users and roles without changing the EKS cluster
+- **Independent deployment**: Access entries can be updated independently
+- **Scalability**: Easy to manage multiple access entries for different teams/purposes
 
 ### IAM Roles for ECS
 

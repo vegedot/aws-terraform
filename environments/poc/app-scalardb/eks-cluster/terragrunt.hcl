@@ -29,15 +29,6 @@ dependency "eks_sg" {
   mock_outputs_allowed_terraform_commands = ["init", "validate", "plan"]
 }
 
-dependency "bastion" {
-  config_path = "../../bastion/ec2"
-
-  mock_outputs = {
-    iam_role_arn = "arn:aws:iam::${local.aws_account_id}:role/${local.project_name}-${local.environment}-role-bastion"
-  }
-  mock_outputs_allowed_terraform_commands = ["init", "validate", "plan"]
-}
-
 terraform {
   source = "tfr:///terraform-aws-modules/eks/aws?version=21.10.1"
 }
@@ -103,23 +94,6 @@ inputs = {
 
   # Enable IRSA (IAM Roles for Service Accounts)
   enable_irsa = true
-
-  # Access Entries - Bastion host kubectl access
-  # NOTE: Dependencyにより、Bastionが先に作成される必要があります
-  access_entries = {
-    bastion = {
-      principal_arn = dependency.bastion.outputs.iam_role_arn
-
-      policy_associations = {
-        admin = {
-          policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
-          access_scope = {
-            type = "cluster"
-          }
-        }
-      }
-    }
-  }
 
   # CloudWatch Logging
   cluster_enabled_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
