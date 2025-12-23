@@ -86,12 +86,13 @@ environments/{env}/
     alb/                  # API ALB (uses custom module)
     ecr/                  # ECR repository for Java API images
     ecs-cluster/          # ECS cluster (uses official module)
+    ecs-iam/              # ECS IAM roles (uses custom module)
     ecs-sg/               # ECS API security group
-    iam/                  # IAM roles for ECS (uses custom module)
   app-web/
     alb/                  # WEB ALB (uses custom module)
     ecr/                  # ECR repository for Node.js WEB images
     ecs-cluster/          # ECS cluster for web
+    ecs-iam/              # ECS IAM roles (uses custom module)
     ecs-sg/               # ECS WEB security group
     s3-web/              # S3 for static content
   app-scalardb/
@@ -122,8 +123,8 @@ Deploy in this order (dependencies are managed via Terragrunt dependency blocks)
 6. app-api/ecs-cluster, app-web/ecs-cluster
 7. database/aurora-sg (requires ecs-sg)
 8. database/aurora, database/dynamodb
-9. app-api/iam (requires DynamoDB ARN)
-10. app-web/iam
+9. app-api/ecs-iam (requires DynamoDB ARN)
+10. app-web/ecs-iam
 11. app-web/s3-web
 12. app-scalardb/eks-sg (requires ecs-sg)
 13. app-scalardb/eks-cluster (requires eks-sg)
@@ -183,14 +184,14 @@ Benefits:
 
 IAM roles are managed per application for security and flexibility:
 
-**App-API IAM Roles** (`app-api/iam/`, uses `modules/ecs-iam`):
+**App-API IAM Roles** (`app-api/ecs-iam/`, uses `modules/ecs-iam`):
 1. **Task Execution Role**: ECR image pull, CloudWatch Logs write (AWS managed policy)
 2. **Task Role**: Application-specific permissions:
    - DynamoDB (GetItem, PutItem, Query, Scan, etc.) - ✅ **enabled**
    - Aurora via Secrets Manager (GetSecretValue) - ✅ **enabled**
    - CloudWatch Logs (/aws/ecs/{project}-{env}-*)
 
-**App-WEB IAM Roles** (`app-web/iam/`, uses `modules/ecs-iam`):
+**App-WEB IAM Roles** (`app-web/ecs-iam/`, uses `modules/ecs-iam`):
 1. **Task Execution Role**: ECR image pull, CloudWatch Logs write (AWS managed policy)
 2. **Task Role**: Application-specific permissions:
    - DynamoDB - ❌ **disabled** (WEB doesn't need database access)
