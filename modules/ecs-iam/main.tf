@@ -124,3 +124,11 @@ resource "aws_iam_role_policy" "ecs_task_secrets_policy" {
     ]
   })
 }
+
+# AWS X-Ray access policy for distributed tracing (conditional)
+resource "aws_iam_role_policy_attachment" "ecs_task_xray_policy" {
+  count = var.enable_xray ? 1 : 0
+
+  role       = aws_iam_role.ecs_task_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"
+}

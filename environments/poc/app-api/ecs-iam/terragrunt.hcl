@@ -30,4 +30,5 @@ inputs = {
   enable_dynamodb_access  = true
   dynamodb_table_arn      = dependency.dynamodb.outputs.dynamodb_table_arn
   enable_aurora_access    = true
+  enable_xray             = true
 }

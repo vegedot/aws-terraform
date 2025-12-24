@@ -20,5 +20,6 @@ inputs = {
   app_name                = "web"
   enable_dynamodb_access  = false
   enable_aurora_access    = false
+  enable_xray             = true
   # dynamodb_table_arn is not required when enable_dynamodb_access = false
 }

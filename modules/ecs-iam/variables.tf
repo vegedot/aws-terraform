@@ -35,3 +35,9 @@ variable "enable_aurora_access" {
   type        = bool
   default     = false
 }
+
+variable "enable_xray" {
+  description = "Enable AWS X-Ray tracing for the task role"
+  type        = bool
+  default     = false
+}

@@ -190,6 +190,7 @@ IAM roles are managed per application for security and flexibility:
    - DynamoDB (GetItem, PutItem, Query, Scan, etc.) - ✅ **enabled**
    - Aurora via Secrets Manager (GetSecretValue) - ✅ **enabled**
    - CloudWatch Logs (/aws/ecs/{project}-{env}-*)
+   - AWS X-Ray (PutTraceSegments, PutTelemetryRecords) - ✅ **enabled**
 
 **App-WEB IAM Roles** (`app-web/ecs-iam/`, uses `modules/ecs-iam`):
 1. **Task Execution Role**: ECR image pull, CloudWatch Logs write (AWS managed policy)
@@ -197,12 +198,14 @@ IAM roles are managed per application for security and flexibility:
    - DynamoDB - ❌ **disabled** (WEB doesn't need database access)
    - Aurora via Secrets Manager - ❌ **disabled** (WEB doesn't need database access)
    - CloudWatch Logs (/aws/ecs/{project}-{env}-*)
+   - AWS X-Ray (PutTraceSegments, PutTelemetryRecords) - ✅ **enabled**
 
 Benefits:
 - **Principle of Least Privilege**: Each app only has permissions it needs (API has DB access, WEB does not)
 - **Independent management**: API and WEB permissions managed separately
 - **Flexibility**: Easy to add app-specific permissions (e.g., S3 for WEB, SQS for API)
 - **Security**: WEB application has no database access at all, reducing attack surface
+- **Observability**: X-Ray tracing enabled for distributed tracing and performance analysis
 
 ### Container Image Management (ECR)
 
@@ -241,6 +244,40 @@ docker push {account-id}.dkr.ecr.ap-northeast-1.amazonaws.com/{project}-{env}-ap
 - Use **ecspresso** for ECS task definitions and services
 - Use **lambroll** for Lambda functions
 - Terraform only manages infrastructure (clusters, IAM roles, security groups, ECR repositories, etc.)
+
+**AWS X-Ray Integration (OpenTelemetry + ADOT Collector)**:
+- X-Ray IAM permissions are enabled for both API and WEB applications
+- Uses OpenTelemetry SDK in applications + AWS Distro for OpenTelemetry (ADOT) Collector as sidecar
+- Add ADOT Collector as a sidecar container in your ECS task definition (via ecspresso)
+- Example task definition snippet:
+  ```json
+  {
+    "name": "aws-otel-collector",
+    "image": "public.ecr.aws/aws-observability/aws-otel-collector:latest",
+    "cpu": 128,
+    "memoryReservation": 256,
+    "portMappings": [
+      {
+        "containerPort": 4317,
+        "protocol": "tcp"
+      },
+      {
+        "containerPort": 4318,
+        "protocol": "tcp"
+      }
+    ],
+    "environment": [
+      {
+        "name": "AOT_CONFIG_CONTENT",
+        "value": "receivers:\n  otlp:\n    protocols:\n      grpc:\n        endpoint: 0.0.0.0:4317\n      http:\n        endpoint: 0.0.0.0:4318\nprocessors:\n  batch:\nexporters:\n  awsxray:\nservice:\n  pipelines:\n    traces:\n      receivers: [otlp]\n      processors: [batch]\n      exporters: [awsxray]"
+      }
+    ]
+  }
+  ```
+- Configure your application with OpenTelemetry SDK:
+  - **Java**: OpenTelemetry Java Agent with OTLP exporter to `localhost:4317` (gRPC)
+  - **Node.js**: `@opentelemetry/sdk-node` with OTLP exporter to `localhost:4318` (HTTP)
+- ADOT Collector converts OpenTelemetry traces to X-Ray format automatically
 
 ### PoC Environment Specifics
 
