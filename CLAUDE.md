@@ -12,15 +12,15 @@ This is a Terragrunt + Terraform codebase for managing AWS infrastructure across
 
 ```bash
 # Deploy all resources in an environment
-cd environments/poc
+cd live/poc
 terragrunt run-all apply
 
 # Deploy a specific resource
-cd environments/poc/network/vpc
+cd live/poc/network/vpc
 terragrunt apply
 
 # Deploy by logical group
-cd environments/poc/network
+cd live/poc/network
 terragrunt run-all apply
 
 # Plan changes
@@ -46,8 +46,8 @@ find . -type d -name ".terragrunt-cache" -prune -exec rm -rf {} \;
 ### Configuration Hierarchy
 
 1. **root.hcl**: Root-level configuration defining AWS provider, remote state (S3 with use_lockfile), and region settings
-2. **environments/{env}/common.hcl**: Environment-specific variables (AWS account ID, region, profile, CIDR blocks, AMI IDs, tags)
-3. **environments/{env}/{group}/{resource}/terragrunt.hcl**: Individual resource configurations with dependency management
+2. **live/{env}/common.hcl**: Environment-specific variables (AWS account ID, region, profile, CIDR blocks, AMI IDs, tags)
+3. **live/{env}/{group}/{resource}/terragrunt.hcl**: Individual resource configurations with dependency management
 
 Each terragrunt.hcl includes root.hcl and reads common.hcl to access shared configuration.
 
@@ -77,7 +77,7 @@ modules/                    # Custom wrapper modules
   ecs-iam/                 # ECS task/execution roles + DynamoDB/CloudWatch permissions
   waf/                     # IP Set + Web ACL + CloudFront association
 
-environments/{env}/
+live/{env}/
   common.hcl              # Environment variables (AWS account, region, CIDR, AMI)
   network/
     vpc/                  # VPC with public/private/database subnets
@@ -110,7 +110,7 @@ environments/{env}/
     lambda-edge/         # Lambda@Edge functions (us-east-1)
     cloudfront/          # CloudFront distribution
   bastion/
-    bastion-sg/           # Bastion security group
+    ec2-sg/              # Bastion EC2 security group
     ec2/                 # Bastion host (SSM-only, no SSH)
 ```
 
@@ -120,19 +120,19 @@ Deploy in this order (dependencies are managed via Terragrunt dependency blocks)
 
 1. network/vpc
 2. network/common-sg (Common policies: HTTP Ingress, HTTPS Ingress, VPC Egress)
-3. app-api/alb-sg, app-web/alb-sg, bastion/bastion-sg
+3. app-api/alb-sg, app-web/alb-sg, bastion/ec2-sg
 4. app-api/ecs-sg, app-web/ecs-sg
 5. app-api/alb, app-web/alb
 6. app-api/ecr, app-web/ecr
 7. app-api/ecs-cluster, app-web/ecs-cluster
-8. database/aurora-sg (requires ecs-sg, bastion-sg)
+8. database/aurora-sg (requires ecs-sg, ec2-sg)
 9. database/aurora, database/dynamodb
 10. app-api/ecs-iam (requires DynamoDB ARN)
 11. app-web/ecs-iam
 12. app-web/s3-web
-13. app-scalardb/eks-sg (requires ecs-sg, bastion-sg)
+13. app-scalardb/eks-sg (requires ecs-sg, ec2-sg)
 14. app-scalardb/eks-cluster (requires eks-sg)
-15. bastion/ec2 (requires bastion-sg)
+15. bastion/ec2 (requires ec2-sg)
 16. app-scalardb/eks-access-entries (requires eks-cluster, bastion)
 17. edge/waf (us-east-1)
 18. edge/lambda-edge (us-east-1, optional)
@@ -161,7 +161,7 @@ Security groups are organized by scope and managed alongside the resources they 
 **Resource-Specific Security Groups** (defined in resource directories):
 - **ALB API SG** (`app-api/alb-sg/`): HTTP/HTTPS from internet for API ALB
 - **ALB WEB SG** (`app-web/alb-sg/`): HTTP/HTTPS from internet for WEB ALB
-- **Bastion SG** (`bastion/bastion-sg/`): SSM-only, outbound TCP to VPC CIDR
+- **Bastion EC2 SG** (`bastion/ec2-sg/`): SSM-only, outbound TCP to VPC CIDR
 - **ECS API SG** (`app-api/ecs-sg/`): Allows traffic from ALB API SG on ports 80, 3000, 8080, plus Bastion SG access
 - **ECS WEB SG** (`app-web/ecs-sg/`): Allows traffic from ALB WEB SG on ports 80, 3000, 8080, plus Bastion SG access
 - **Aurora SG** (`database/aurora-sg/`): Allows MySQL (3306) from ECS API SG, ECS WEB SG, EKS nodes, and Bastion SG
@@ -313,7 +313,7 @@ See docs/aws-naming-convention.md for complete rules.
 
 ### Important Configuration Values
 
-Update in environments/{env}/common.hcl:
+Update in live/{env}/common.hcl:
 - **aws_account_id**: Your AWS account ID
 - **aws_profile**: AWS CLI profile name from ~/.aws/credentials
 - **bastion_ami_id**: Amazon Linux 2023 AMI (update regularly)
@@ -333,7 +333,7 @@ aws ssm start-session --target {instance-id}
 
 ```bash
 # Get Aurora endpoint
-cd environments/poc/database/aurora
+cd live/poc/database/aurora
 terragrunt output
 
 # Connect via Bastion
@@ -377,7 +377,7 @@ CloudFront requires WAF in us-east-1 region. The waf module uses a separate AWS 
 
 Before first deployment:
 
-1. Update environments/{env}/common.hcl with your AWS account ID, profile, and other settings
+1. Update live/{env}/common.hcl with your AWS account ID, profile, and other settings
 2. Create S3 state bucket with versioning:
    ```bash
    aws s3api create-bucket --bucket {project}-{env}-tfstate-{account-id} --region ap-northeast-1 --create-bucket-configuration LocationConstraint=ap-northeast-1

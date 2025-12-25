@@ -16,7 +16,7 @@ aws-terraform/
 │   ├── cloudfront/
 │   ├── ecs-iam/
 │   └── waf/
-└── environments/         # 環境別設定
+└── live/                 # 環境別設定
     ├── poc/              # PoC環境
     │   ├── common.hcl    # 環境固有変数
     │   ├── terragrunt.hcl
@@ -108,7 +108,7 @@ resource "aws_security_group_rule" "bastion_to_ecs" {
 
 **実装例**:
 ```hcl
-# environments/poc/network/vpc/terragrunt.hcl
+# live/poc/network/vpc/terragrunt.hcl
 terraform {
   source = "tfr:///terraform-aws-modules/vpc/aws?version=6.5.1"
 }
@@ -148,7 +148,7 @@ terraform {
 | **直接呼び出し** | DynamoDB | 単一リソース、環境固有設定 |
 | **Wrapper作成** | waf | IP Set + Web ACL + CloudFront関連付け |
 
-#### environments/ の構成
+#### live/ の構成
 
 論理グループで整理し、terraform-aws-modulesまたはカスタムモジュールを参照。環境固有の値はcommon.hclで管理とする。
 
@@ -196,8 +196,8 @@ terraform {
   - API: 常にキャッシュ無効
   - S3静的コンテンツ: 常にキャッシュ有効
 - **State Lock**: Terraform 1.10+ の `use_lockfile` 機能でDynamoDB不要（バージョニングのみ必要）
-- **環境設定**: AWSアカウントID、プロファイル、tfstateバケット名は `environments/{env}/common.hcl` で管理
-- **AMI管理**: Bastion AMI IDは `environments/{env}/common.hcl` で管理、定期的に更新すること
+- **環境設定**: AWSアカウントID、プロファイル、tfstateバケット名は `live/{env}/common.hcl` で管理
+- **AMI管理**: Bastion AMI IDは `live/{env}/common.hcl` で管理、定期的に更新すること
 - **IP制限**: `allowed_ip_addresses`が空の場合は制限なし（PoC/開発）、IPを指定すると制限あり（本番）
 
 ## バージョン情報
@@ -221,7 +221,7 @@ terraform {
 
 ### 1. 環境設定の更新
 
-`environments/poc/common.hcl`で環境固有の値を設定：
+`live/poc/common.hcl`で環境固有の値を設定：
 
 ```hcl
 locals {
@@ -289,7 +289,7 @@ aws s3api get-bucket-encryption --bucket ${PROJECT_NAME}-${ENVIRONMENT}-tfstate-
 ### 3. PoC環境全体のデプロイ
 
 ```bash
-cd environments/poc
+cd live/poc
 
 # 全リソースを一括デプロイ
 terragrunt run-all apply
@@ -300,7 +300,7 @@ terragrunt run-all apply
 依存関係を考慮した推奨デプロイ順序：
 
 ```bash
-cd environments/poc
+cd live/poc
 
 # 1. Network - VPC
 cd network/vpc && terragrunt apply && cd ../..
@@ -356,7 +356,7 @@ cd bastion/ec2 && terragrunt apply && cd ../..
 依存関係を考慮した推奨デプロイ順序：
 
 ```bash
-cd environments/poc
+cd live/poc
 
 # 1. ネットワーク基盤
 cd network && terragrunt run-all apply && cd ..
@@ -402,7 +402,7 @@ Bastion経由でAuroraに接続：
 
 ```bash
 # エンドポイント取得
-cd environments/poc/database/aurora
+cd live/poc/database/aurora
 terragrunt output
 
 # Bastion経由で接続
