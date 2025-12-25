@@ -41,7 +41,7 @@ dependency "waf" {
   config_path = "../waf"
 
   mock_outputs = {
-    web_acl_id = "arn:aws:wafv2:us-east-1:000000000000:global/webacl/mock/00000000-0000-0000-0000-000000000000"
+    web_acl_arn = "arn:aws:wafv2:us-east-1:000000000000:global/webacl/mock/00000000-0000-0000-0000-000000000000"
   }
   mock_outputs_allowed_terraform_commands = ["init", "validate", "plan"]
 }
@@ -65,7 +65,7 @@ inputs = {
   s3_bucket_regional_domain_name     = dependency.s3_web.outputs.s3_bucket_bucket_regional_domain_name
   web_alb_dns_name                   = dependency.web_alb.outputs.alb_dns_name
   api_alb_dns_name                   = dependency.api_alb.outputs.alb_dns_name
-  web_acl_id                         = dependency.waf.outputs.web_acl_id
+  web_acl_id                         = dependency.waf.outputs.web_acl_arn
   web_cache_policy_name              = local.common_vars.locals.web_cache_policy_name
   lambda_edge_viewer_request_arn     = dependency.lambda_edge.outputs.lambda_function_qualified_arn
   project_name                       = local.project_name
