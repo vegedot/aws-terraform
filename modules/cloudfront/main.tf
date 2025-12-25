@@ -1,12 +1,3 @@
-# CloudFront Origin Access Control for S3
-resource "aws_cloudfront_origin_access_control" "s3_oac" {
-  name                              = "${var.project_name}-${var.environment}-s3-oac"
-  description                       = "OAC for S3 bucket"
-  origin_access_control_origin_type = "s3"
-  signing_behavior                  = "always"
-  signing_protocol                  = "sigv4"
-}
-
 # CloudFront Distribution
 module "cloudfront" {
   source  = "terraform-aws-modules/cloudfront/aws"
@@ -18,11 +9,22 @@ module "cloudfront" {
   price_class         = "PriceClass_200"
   wait_for_deployment = false
 
+  # Origin Access Control for S3
+  origin_access_control = {
+    s3_oac = {
+      name             = "${var.project_name}-${var.environment}-s3-oac"
+      description      = "OAC for S3 bucket"
+      origin_type      = "s3"
+      signing_behavior = "always"
+      signing_protocol = "sigv4"
+    }
+  }
+
   # Origin for S3 static content
   origin = {
     s3_static = {
       domain_name              = var.s3_bucket_regional_domain_name
-      origin_access_control_id = aws_cloudfront_origin_access_control.s3_oac.id
+      origin_access_control_key = "s3_oac"
     }
 
     # Origin for WEB ALB
