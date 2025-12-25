@@ -19,7 +19,7 @@ dependency "vpc" {
 }
 
 terraform {
-  source = "${get_repo_root()}/modules/common-sg//"
+  source = "${dirname(find_in_parent_folders("root.hcl"))}/modules/common-sg//"
 }
 
 inputs = {

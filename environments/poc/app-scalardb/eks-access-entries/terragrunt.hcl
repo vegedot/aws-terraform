@@ -27,7 +27,7 @@ dependency "bastion" {
 }
 
 terraform {
-  source = "${get_repo_root()}/modules/eks-access-entries//"
+  source = "${dirname(find_in_parent_folders("root.hcl"))}/modules/eks-access-entries//"
 }
 
 inputs = {

@@ -9,7 +9,7 @@ locals {
 }
 
 terraform {
-  source = "${get_repo_root()}/modules//waf"
+  source = "${dirname(find_in_parent_folders("root.hcl"))}/modules//waf"
 }
 
 inputs = {

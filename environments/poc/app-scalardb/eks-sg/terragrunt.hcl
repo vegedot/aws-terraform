@@ -45,7 +45,7 @@ dependency "ecs_web_sg" {
 }
 
 terraform {
-  source = "${get_repo_root()}/modules/eks-sg//"
+  source = "${dirname(find_in_parent_folders("root.hcl"))}/modules/eks-sg//"
 }
 
 inputs = {

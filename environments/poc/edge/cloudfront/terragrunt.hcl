@@ -56,7 +56,7 @@ dependency "lambda_edge" {
 }
 
 terraform {
-  source = "${get_repo_root()}/modules/cloudfront//"
+  source = "${dirname(find_in_parent_folders("root.hcl"))}/modules/cloudfront//"
 }
 
 inputs = {

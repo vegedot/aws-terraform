@@ -10,7 +10,7 @@ locals {
 }
 
 terraform {
-  source = "${get_repo_root()}/modules//ecs-iam"
+  source = "${dirname(find_in_parent_folders("root.hcl"))}/modules//ecs-iam"
 }
 
 inputs = {

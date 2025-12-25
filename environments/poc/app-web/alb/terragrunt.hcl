@@ -28,7 +28,7 @@ dependency "alb_sg" {
 }
 
 terraform {
-  source = "${get_repo_root()}/modules/alb//"
+  source = "${dirname(find_in_parent_folders("root.hcl"))}/modules/alb//"
 }
 
 inputs = {
