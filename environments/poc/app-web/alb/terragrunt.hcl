@@ -18,11 +18,11 @@ dependency "vpc" {
   mock_outputs_allowed_terraform_commands = ["init", "validate", "plan"]
 }
 
-dependency "security_groups" {
-  config_path = "../../network/security-groups"
+dependency "alb_sg" {
+  config_path = "../alb-sg"
 
   mock_outputs = {
-    alb_sg_id = "sg-00000000000000000"
+    security_group_id = "sg-00000000000000000"
   }
   mock_outputs_allowed_terraform_commands = ["init", "validate", "plan"]
 }
@@ -34,7 +34,7 @@ terraform {
 inputs = {
   vpc_id            = dependency.vpc.outputs.vpc_id
   public_subnets    = dependency.vpc.outputs.public_subnets
-  alb_sg_id         = dependency.security_groups.outputs.alb_sg_id
+  alb_sg_id         = dependency.alb_sg.outputs.security_group_id
   project_name      = local.project_name
   environment       = local.environment
 

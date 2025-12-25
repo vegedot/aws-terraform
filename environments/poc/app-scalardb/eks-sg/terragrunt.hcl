@@ -17,11 +17,11 @@ dependency "vpc" {
   mock_outputs_allowed_terraform_commands = ["init", "validate", "plan"]
 }
 
-dependency "security_groups" {
-  config_path = "../../network/security-groups"
+dependency "bastion_sg" {
+  config_path = "../../bastion/bastion-sg"
 
   mock_outputs = {
-    bastion_sg_id = "sg-00000000000000000"
+    security_group_id = "sg-00000000000000000"
   }
   mock_outputs_allowed_terraform_commands = ["init", "validate", "plan"]
 }
@@ -54,5 +54,5 @@ inputs = {
   environment   = local.environment
   ecs_api_sg_id = dependency.ecs_api_sg.outputs.security_group_id
   ecs_web_sg_id = dependency.ecs_web_sg.outputs.security_group_id
-  bastion_sg_id = dependency.security_groups.outputs.bastion_sg_id
+  bastion_sg_id = dependency.bastion_sg.outputs.security_group_id
 }

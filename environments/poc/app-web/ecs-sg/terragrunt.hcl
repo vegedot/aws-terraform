@@ -17,12 +17,20 @@ dependency "vpc" {
   mock_outputs_allowed_terraform_commands = ["init", "validate", "plan"]
 }
 
-dependency "security_groups" {
-  config_path = "../../network/security-groups"
+dependency "alb_sg" {
+  config_path = "../alb-sg"
 
   mock_outputs = {
-    alb_sg_id     = "sg-00000000000000000"
-    bastion_sg_id = "sg-00000000000000000"
+    security_group_id = "sg-00000000000000000"
+  }
+  mock_outputs_allowed_terraform_commands = ["init", "validate", "plan"]
+}
+
+dependency "bastion_sg" {
+  config_path = "../../bastion/bastion-sg"
+
+  mock_outputs = {
+    security_group_id = "sg-00000000000000000"
   }
   mock_outputs_allowed_terraform_commands = ["init", "validate", "plan"]
 }
@@ -42,28 +50,28 @@ inputs = {
       from_port                = 80
       to_port                  = 80
       protocol                 = "tcp"
-      source_security_group_id = dependency.security_groups.outputs.alb_sg_id
+      source_security_group_id = dependency.alb_sg.outputs.security_group_id
       description              = "HTTP from ALB"
     },
     {
       from_port                = 3000
       to_port                  = 3000
       protocol                 = "tcp"
-      source_security_group_id = dependency.security_groups.outputs.alb_sg_id
+      source_security_group_id = dependency.alb_sg.outputs.security_group_id
       description              = "Application port from ALB"
     },
     {
       from_port                = 8080
       to_port                  = 8080
       protocol                 = "tcp"
-      source_security_group_id = dependency.security_groups.outputs.alb_sg_id
+      source_security_group_id = dependency.alb_sg.outputs.security_group_id
       description              = "Alternative application port from ALB"
     },
     {
       from_port                = 0
       to_port                  = 65535
       protocol                 = "tcp"
-      source_security_group_id = dependency.security_groups.outputs.bastion_sg_id
+      source_security_group_id = dependency.bastion_sg.outputs.security_group_id
       description              = "Allow Bastion to connect to ECS tasks"
     }
   ]

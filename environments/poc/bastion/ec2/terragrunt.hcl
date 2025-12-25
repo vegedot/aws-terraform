@@ -17,11 +17,11 @@ dependency "vpc" {
   mock_outputs_allowed_terraform_commands = ["init", "validate", "plan"]
 }
 
-dependency "security_groups" {
-  config_path = "../../network/security-groups"
+dependency "bastion_sg" {
+  config_path = "../bastion-sg"
 
   mock_outputs = {
-    bastion_sg_id = "sg-00000000000000000"
+    security_group_id = "sg-00000000000000000"
   }
   mock_outputs_allowed_terraform_commands = ["init", "validate", "plan"]
 }
@@ -39,7 +39,7 @@ inputs = {
   ami                    = local.common_vars.locals.bastion_ami_id
   instance_type          = "t3.micro"
   monitoring             = true
-  vpc_security_group_ids = [dependency.security_groups.outputs.bastion_sg_id]
+  vpc_security_group_ids = [dependency.bastion_sg.outputs.security_group_id]
   subnet_id              = dependency.vpc.outputs.private_subnets[0]
 
   # SSM接続のみ、パブリックIPは不要
