@@ -19,7 +19,7 @@ dependency "vpc" {
 }
 
 terraform {
-  source = "${get_repo_root()}/modules/security-groups//"
+  source = "${get_repo_root()}/modules/common-sg//"
 }
 
 inputs = {

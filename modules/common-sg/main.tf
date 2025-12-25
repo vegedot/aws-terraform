@@ -1,5 +1,5 @@
-# HTTP Ingress Security Group (Generic Policy)
-# 汎用ポリシー: インターネットからのHTTPアクセスを許可
+# HTTP Ingress Security Group (Common Policy)
+# 共通ポリシー: インターネットからのHTTPアクセスを許可
 # 必要なリソース（ALB等）で使用可能
 # Note: Security Groupはステートフルなので、egressルールは不要
 module "http_ingress_sg" {
@@ -8,7 +8,7 @@ module "http_ingress_sg" {
 
   name             = "${var.project_name}-${var.environment}-sg-http-ingress"
   use_name_prefix  = false
-  description      = "Generic policy for HTTP ingress from internet"
+  description      = "Common policy for HTTP ingress from internet"
   vpc_id           = var.vpc_id
 
   ingress_with_cidr_blocks = [
@@ -23,8 +23,8 @@ module "http_ingress_sg" {
 
 }
 
-# HTTPS Ingress Security Group (Generic Policy)
-# 汎用ポリシー: インターネットからのHTTPSアクセスを許可
+# HTTPS Ingress Security Group (Common Policy)
+# 共通ポリシー: インターネットからのHTTPSアクセスを許可
 # 必要なリソース（ALB等）で使用可能
 # Note: Security Groupはステートフルなので、egressルールは不要
 module "https_ingress_sg" {
@@ -33,7 +33,7 @@ module "https_ingress_sg" {
 
   name             = "${var.project_name}-${var.environment}-sg-https-ingress"
   use_name_prefix  = false
-  description      = "Generic policy for HTTPS ingress from internet"
+  description      = "Common policy for HTTPS ingress from internet"
   vpc_id           = var.vpc_id
 
   ingress_with_cidr_blocks = [
@@ -48,8 +48,8 @@ module "https_ingress_sg" {
 
 }
 
-# VPC Egress Security Group (Generic Policy)
-# 汎用ポリシー: VPC内の全TCPポートへのアクセスを許可
+# VPC Egress Security Group (Common Policy)
+# 共通ポリシー: VPC内の全TCPポートへのアクセスを許可
 # 必要なリソース（Bastion等の管理用リソース）で使用可能
 module "vpc_egress_sg" {
   source  = "terraform-aws-modules/security-group/aws"
@@ -57,7 +57,7 @@ module "vpc_egress_sg" {
 
   name             = "${var.project_name}-${var.environment}-sg-vpc-egress"
   use_name_prefix  = false
-  description      = "Generic policy for VPC egress (all TCP ports)"
+  description      = "Common policy for VPC egress (all TCP ports)"
   vpc_id           = var.vpc_id
 
   # インバウンドルール不要

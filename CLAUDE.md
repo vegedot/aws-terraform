@@ -81,7 +81,7 @@ environments/{env}/
   common.hcl              # Environment variables (AWS account, region, CIDR, AMI)
   network/
     vpc/                  # VPC with public/private/database subnets
-    security-groups/      # Generic policy SGs (HTTP Ingress, HTTPS Ingress, VPC Egress) - use when needed
+    common-sg/            # Common policy SGs (HTTP Ingress, HTTPS Ingress, VPC Egress) - use when needed
   app-api/
     alb-sg/               # API ALB security group
     alb/                  # API ALB (uses custom module)
@@ -119,7 +119,7 @@ environments/{env}/
 Deploy in this order (dependencies are managed via Terragrunt dependency blocks):
 
 1. network/vpc
-2. network/security-groups (Generic policies: HTTP Ingress, HTTPS Ingress, VPC Egress)
+2. network/common-sg (Common policies: HTTP Ingress, HTTPS Ingress, VPC Egress)
 3. app-api/alb-sg, app-web/alb-sg, bastion/bastion-sg
 4. app-api/ecs-sg, app-web/ecs-sg
 5. app-api/alb, app-web/alb
@@ -153,10 +153,10 @@ Or use `terragrunt run-all apply` to automatically resolve dependencies.
 
 Security groups are organized by scope and managed alongside the resources they protect:
 
-**Generic Policy Security Groups** (`modules/security-groups`, `network/security-groups/`):
-- **HTTP Ingress SG**: Generic policy for HTTP (80) ingress from internet (0.0.0.0/0) - Available for use when needed
-- **HTTPS Ingress SG**: Generic policy for HTTPS (443) ingress from internet (0.0.0.0/0) - Available for use when needed
-- **VPC Egress SG**: Generic policy for all TCP traffic (0-65535) egress to VPC CIDR - Available for use when needed
+**Common Policy Security Groups** (`modules/security-groups`, `network/common-sg/`):
+- **HTTP Ingress SG**: Common policy for HTTP (80) ingress from internet (0.0.0.0/0) - Available for use when needed
+- **HTTPS Ingress SG**: Common policy for HTTPS (443) ingress from internet (0.0.0.0/0) - Available for use when needed
+- **VPC Egress SG**: Common policy for all TCP traffic (0-65535) egress to VPC CIDR - Available for use when needed
 
 **Resource-Specific Security Groups** (defined in resource directories):
 - **ALB API SG** (`app-api/alb-sg/`): HTTP/HTTPS from internet for API ALB
@@ -173,7 +173,7 @@ This architecture provides:
 - **Separation of concerns**: Each security group is managed with its related resource
 - **Clear dependencies**: Security groups reference each other by resource name (ALB SG, Bastion SG, etc.) making intent clear
 - **Easier maintenance**: Changes to one resource don't affect others
-- **Generic policies available**: Shared HTTPS and VPC internal policies can be used when appropriate
+- **Common policies available**: Shared HTTP/HTTPS ingress and VPC egress policies can be used when appropriate
 
 ### EKS Access Control Architecture
 
