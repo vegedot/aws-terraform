@@ -27,7 +27,7 @@ dependency "alb_sg" {
 }
 
 dependency "bastion_sg" {
-  config_path = "../../bastion/bastion-sg"
+  config_path = "../../bastion/ec2-sg"
 
   mock_outputs = {
     security_group_id = "sg-00000000000000000"

@@ -18,7 +18,7 @@ dependency "vpc" {
 }
 
 dependency "bastion_sg" {
-  config_path = "../bastion-sg"
+  config_path = "../ec2-sg"
 
   mock_outputs = {
     security_group_id = "sg-00000000000000000"
