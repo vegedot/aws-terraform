@@ -52,6 +52,7 @@ inputs = {
   # PoC環境のため最小構成
   instances = {
     one = {
+      identifier          = "${local.project_name}-${local.environment}-aurora-main-1"
       instance_class      = "db.t3.medium"
       publicly_accessible = false
     }
