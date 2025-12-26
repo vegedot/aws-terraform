@@ -112,6 +112,10 @@ live/{env}/
   bastion/
     ec2-sg/              # Bastion EC2 security group
     ec2/                 # Bastion host (SSM-only, no SSH)
+  cicd/
+    s3-source/           # Source code zip storage
+    codebuild-api/       # API Docker image build (Java)
+    codebuild-web/       # WEB Docker image build (Node.js)
 ```
 
 ### Deployment Dependencies
@@ -137,6 +141,8 @@ Deploy in this order (dependencies are managed via Terragrunt dependency blocks)
 17. edge/waf (us-east-1)
 18. edge/lambda-edge (us-east-1, optional)
 19. edge/cloudfront (requires app-api/alb, app-web/alb, s3-web, waf, lambda-edge)
+20. cicd/s3-source (source code storage)
+21. cicd/codebuild-api, cicd/codebuild-web (requires ecr, s3-source)
 
 Or use `terragrunt run-all apply` to automatically resolve dependencies.
 
@@ -287,6 +293,35 @@ docker push {account-id}.dkr.ecr.ap-northeast-1.amazonaws.com/{project}-{env}-ap
   - **Java**: OpenTelemetry Java Agent with OTLP exporter to `localhost:4317` (gRPC)
   - **Node.js**: `@opentelemetry/sdk-node` with OTLP exporter to `localhost:4318` (HTTP)
 - ADOT Collector converts OpenTelemetry traces to X-Ray format automatically
+
+### CI/CD Architecture
+
+**CodeBuild Projects** (`cicd/`, uses `modules/codebuild`):
+- Runs **outside VPC** for cost savings (no NAT Gateway charges)
+- Builds Docker images from S3 source zips and pushes to ECR
+- CloudWatch Logs retention: 7 days (configurable)
+- Uses buildspec.yml from source code (inline buildspec available as fallback)
+
+**S3 Source Bucket** (`cicd/s3-source/`):
+- Stores source code zip files for CodeBuild
+- Versioning enabled for source code history
+- Lifecycle: 90 days for old versions, 180 days for builds
+- Encryption: AES256
+
+**Build Process**:
+1. Upload source zip to S3: `s3://myapp-poc-cicd-source-{account-id}/api/source.zip`
+2. Trigger CodeBuild: `aws codebuild start-build --project-name myapp-poc-build-api`
+3. CodeBuild pulls source from S3, builds Docker image, pushes to ECR
+4. Logs available in CloudWatch Logs: `/aws/codebuild/myapp-poc-api`
+
+**Cost Optimization**:
+- VPC外実行: NAT Gateway費用削減（約$394/年）
+- ログ保持期間: 7日（無期限保存を回避）
+- ローカルキャッシュ: Docker layer cache有効
+
+**Required Files in Source Code**:
+- `Dockerfile` - Container image definition
+- `buildspec.yml` - Build instructions (samples in docs/buildspec-samples/)
 
 ### PoC Environment Specifics
 
