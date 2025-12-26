@@ -16,10 +16,20 @@ terraform {
 
 dependency "s3_source" {
   config_path = "../s3-source"
+
+  mock_outputs = {
+    s3_bucket_id  = "mock-s3-bucket"
+    s3_bucket_arn = "arn:aws:s3:::mock-s3-bucket"
+  }
 }
 
 dependency "ecr" {
   config_path = "../../app-web/ecr"
+
+  mock_outputs = {
+    repository_arn = "arn:aws:ecr:ap-northeast-1:123456789012:repository/mock-ecr-repo"
+    repository_url = "123456789012.dkr.ecr.ap-northeast-1.amazonaws.com/mock-ecr-repo"
+  }
 }
 
 inputs = {
