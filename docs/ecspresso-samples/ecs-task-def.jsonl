@@ -1,0 +1,95 @@
+// ECS Task definition for API application
+// ecspresso will use this to create/update the ECS task definition
+
+{
+  // Task definition family name
+  family: "myapp-poc-task-api",
+
+  // Fargate requires awsvpc network mode
+  networkMode: "awsvpc",
+
+  // Launch type
+  requiresCompatibilities: ["FARGATE"],
+
+  // CPU and memory (Fargate requires specific combinations)
+  // 0.25 vCPU = 256, 0.5 vCPU = 512, 1 vCPU = 1024, 2 vCPU = 2048, 4 vCPU = 4096
+  // Memory: 512MB to 30GB (depends on CPU)
+  cpu: "512",
+  memory: "1024",
+
+  // IAM roles from Terraform state
+  executionRoleArn: {{ tfstate `data.terraform_remote_state.ecspresso_data.outputs.task_execution_role_arn` }},
+  taskRoleArn: {{ tfstate `data.terraform_remote_state.ecspresso_data.outputs.task_role_arn` }},
+
+  // Container definitions
+  containerDefinitions: [
+    {
+      name: "api",
+
+      // Image from ECR (use actual image tag in CI/CD)
+      image: {{ tfstate `data.terraform_remote_state.ecspresso_data.outputs.ecr_repository_url` }} + ":latest",
+
+      // Port mappings
+      portMappings: [
+        {
+          containerPort: 8080,
+          protocol: "tcp"
+        }
+      ],
+
+      // Environment variables
+      environment: [
+        {
+          name: "ENV",
+          value: "poc"
+        },
+        {
+          name: "PORT",
+          value: "8080"
+        }
+      ],
+
+      // Secrets from AWS Secrets Manager (optional)
+      // secrets: [
+      //   {
+      //     name: "DB_PASSWORD",
+      //     valueFrom: "arn:aws:secretsmanager:ap-northeast-1:123456789012:secret:myapp-poc-db-password"
+      //   }
+      // ],
+
+      // CloudWatch Logs configuration
+      logConfiguration: {
+        logDriver: "awslogs",
+        options: {
+          "awslogs-region": "ap-northeast-1",
+          "awslogs-group": "/ecs/myapp-poc-api",
+          "awslogs-stream-prefix": "api"
+        }
+      },
+
+      // Health check
+      healthCheck: {
+        command: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"],
+        interval: 30,
+        timeout: 5,
+        retries: 3,
+        startPeriod: 60
+      },
+
+      // Essential container (if this fails, task stops)
+      essential: true
+    }
+  ],
+
+  // Tags
+  tags: [
+    {
+      key: "Name",
+      value: "myapp-poc-task-api"
+    },
+    {
+      key: "Environment",
+      value: "poc"
+    }
+  ]
+}

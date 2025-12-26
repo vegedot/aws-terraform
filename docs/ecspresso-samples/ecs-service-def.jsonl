@@ -1,0 +1,41 @@
+// ECS Service definition for API application
+// ecspresso will use this to create/update the ECS service
+
+{
+  // Service name
+  serviceName: "myapp-poc-service-api",
+
+  // Desired task count
+  desiredCount: 2,
+
+  // Launch type
+  launchType: "FARGATE",
+
+  // Platform version
+  platformVersion: "LATEST",
+
+  // Network configuration from Terraform state
+  networkConfiguration: {{ tfstate `data.terraform_remote_state.ecspresso_data.outputs.network_configuration` }},
+
+  // Load balancer configuration from Terraform state
+  loadBalancers: {{ tfstate `data.terraform_remote_state.ecspresso_data.outputs.load_balancers` }},
+
+  // Health check grace period (seconds)
+  healthCheckGracePeriodSeconds: 60,
+
+  // Deployment configuration
+  deploymentConfiguration: {
+    maximumPercent: 200,
+    minimumHealthyPercent: 100,
+    deploymentCircuitBreaker: {
+      enable: true,
+      rollback: true
+    }
+  },
+
+  // Enable ECS Exec for debugging
+  enableExecuteCommand: true,
+
+  // Propagate tags from task definition
+  propagateTags: "TASK_DEFINITION"
+}

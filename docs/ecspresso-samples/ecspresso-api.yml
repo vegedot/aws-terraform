@@ -1,0 +1,25 @@
+# ecspresso configuration for API application
+# Place this file in your application repository
+
+region: ap-northeast-1
+cluster: {{ tfstate `data.terraform_remote_state.ecspresso_data.outputs.ecs_cluster_name` }}
+service: myapp-poc-service-api
+
+# Service definition file
+service_definition: ecs-service-def.jsonl
+
+# Task definition file
+task_definition: ecs-task-def.jsonl
+
+# Timeout for deployment
+timeout: 10m
+
+# Terraform state integration
+plugins:
+  - name: tfstate
+    config:
+      # Single state file containing all necessary data
+      url: s3://myapp-poc-tfstate-{account-id}/live/poc/app-api/ecspresso-data/terraform.tfstate
+
+# Optional: Code deploy configuration for blue/green deployment
+# appspec: appspec.yaml
