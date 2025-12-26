@@ -32,6 +32,23 @@ dependency "ecr" {
   }
 }
 
+dependency "vpc" {
+  config_path = "../../network/vpc"
+
+  mock_outputs = {
+    vpc_id          = "vpc-00000000"
+    private_subnets = ["subnet-00000000"]
+  }
+}
+
+dependency "codebuild_sg" {
+  config_path = "../codebuild-sg"
+
+  mock_outputs = {
+    security_group_id = "sg-00000000"
+  }
+}
+
 inputs = {
   project_name   = local.project_name
   environment    = local.environment
@@ -48,10 +65,10 @@ inputs = {
   ecr_repository_arn = dependency.ecr.outputs.repository_arn
   ecr_repository_url = dependency.ecr.outputs.repository_url
 
-  # VPC configuration (omitted for cost savings - runs outside VPC)
-  # vpc_id             = dependency.vpc.outputs.vpc_id
-  # subnet_ids         = dependency.vpc.outputs.private_subnets
-  # security_group_ids = [dependency.codebuild_sg.outputs.security_group_id]
+  # VPC configuration (for DockerHub rate limit mitigation)
+  vpc_id             = dependency.vpc.outputs.vpc_id
+  subnet_ids         = dependency.vpc.outputs.private_subnets
+  security_group_ids = [dependency.codebuild_sg.outputs.security_group_id]
 
   # Build configuration for Java application
   compute_type = "BUILD_GENERAL1_SMALL"
