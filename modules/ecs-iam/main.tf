@@ -26,6 +26,30 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
+# Secrets Manager access policy for Task Execution Role (for container startup)
+resource "aws_iam_role_policy" "ecs_task_execution_secrets_policy" {
+  count = var.enable_aurora_access ? 1 : 0
+
+  name = "${var.project_name}-${var.environment}-ecs-execution-secrets-policy-${var.app_name}"
+  role = aws_iam_role.ecs_task_execution_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:GetSecretValue"
+        ]
+        Resource = [
+          "arn:aws:secretsmanager:${var.aws_region}:*:secret:rds!cluster-*",
+          "arn:aws:secretsmanager:${var.aws_region}:*:secret:${var.project_name}-${var.environment}-*"
+        ]
+      }
+    ]
+  })
+}
+
 # ECS Task Role (for application access to AWS services)
 resource "aws_iam_role" "ecs_task_role" {
   name = "${var.project_name}-${var.environment}-ecs-task-role-${var.app_name}"
